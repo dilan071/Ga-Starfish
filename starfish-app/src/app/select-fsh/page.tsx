@@ -10,7 +10,7 @@ export default function SelectFSH() {
   const handleSelect = () => {
     if (selectedFSH) {
       localStorage.setItem('selectedFSH', selectedFSH);
-      alert(`FSH seleccionado: ${selectedFSH}`);
+      alert(`Factor social seleccionado: ${selectedFSH}`);
       router.push('/view-questions');
     }
   };
