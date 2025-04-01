@@ -74,11 +74,35 @@ export default function RetrospectiveSessionPage() {
     setHasVoted(true);
   };
 
-  // Ejemplo de mapeo de preguntas (puedes ajustarlo según tus necesidades)
+ 
   const questionsMapping: { [key: string]: string[] } = {
-    'FSH1': ['Pregunta 1 para FSH1', 'Pregunta 2 para FSH1'],
-    'FSH2': ['Pregunta 1 para FSH2', 'Pregunta 2 para FSH2'],
-    'FSH3': ['Pregunta 1 para FSH3', 'Pregunta 2 para FSH3'],
+    'Comunicación': ['¿En qué momentos del sprint la comunicación fue efectiva y cómo podemos replicarla en el futuro?',
+       '¿Hubo situaciones donde la falta de claridad en la comunicación generó malentendidos? ¿Cómo podríamos evitarlo?'],
+    'Compromiso': ['¿Cómo percibimos el nivel de compromiso individual y colectivo durante el sprint? ¿Qué factores lo influyeron?',
+       '¿Qué acciones concretas podríamos tomar para fortalecer el compromiso en los próximos sprints?'],
+    'Colaboración': ['¿En qué tareas o situaciones la colaboración entre el equipo fue clave para el éxito?',
+       '¿Identificamos oportunidades donde una mayor colaboración hubiera acelerado o mejorado los resultados?'],
+    'Motivación': ['¿Qué aspectos del sprint aumentaron o disminuyeron la motivación del equipo? ¿Cómo podemos potenciarlos?',
+       '¿Cómo podemos asegurar que las responsabilidades asignadas estén alineadas con los intereses y motivaciones individuales?'],
+    'Satisfacción laboral': ['¿Qué elementos del trabajo durante el sprint contribuyeron a su satisfacción personal?',
+       '¿Qué cambios en la dinámica del equipo o en las tareas mejorarían la satisfacción general?'],
+    'Inteligencia emocional': ['¿Cómo manejamos los conflictos o situaciones de estrés durante el sprint? ¿Qué habilidades emocionales podríamos reforzar?',
+       '¿De qué manera podemos fomentar un ambiente donde se priorice la empatía y el respeto mutuo?'],
+    'Cohesión de equipo': ['¿Qué actividades o dinámicas durante el sprint fortalecieron la unión y confianza entre los miembros del equipo? ¿Cómo podemos replicarlas?',
+       '¿Hubo momentos en los que percibimos falta de alineación o desconexión en el equipo? ¿Qué acciones podrían ayudarnos a mejorar esto en futuros sprints?'],
+    'Empatía y relaciones interpersonales': ['¿En qué situaciones durante el sprint percibimos que la empatía facilitó la resolución de conflictos o mejoró la dinámica del equipo?',
+       '¿Hubo momentos en los que las diferencias interpersonales afectaron la colaboración?'],
+    'Liderazgo': ['¿El liderazgo durante el sprint facilitó la toma de decisiones? ¿Qué ajustes sugerirían?',
+       '¿Cómo podemos distribuir roles de liderazgo para aprovechar las fortalezas de cada miembro?'],
+    'Autonomía': ['¿En qué tareas o decisiones durante el sprint el equipo sintió que tuvo suficiente autonomía para actuar con agilidad? ¿Cómo podemos replicar ese escenario en el futuro?',
+       '¿Hubo momentos en los que la falta de claridad en los límites de autonomía generó confusión o retrasos? ¿Qué ajustes podríamos hacer para equilibrar libertad y alineación?'],
+    'Innovación': ['¿Qué oportunidades identificamos durante el sprint para probar enfoques o herramientas nuevas? ¿Cómo podemos priorizar la experimentación en futuros sprints?',
+       '¿Hubo barreras (culturales, técnicas o de procesos) que limitaron la creatividad o la implementación de ideas innovadoras? ¿Cómo podríamos abordarlas?'],
+    'Habilidades y experiencia en el proceso de desarrollo de software': ['¿Las habilidades técnicas del equipo fueron suficientes para abordar los desafíos del sprint? ¿En qué áreas necesitamos capacitación?',
+       '¿Cómo podemos compartir conocimientos entre los miembros para fortalecer las habilidades colectivas?'],
+    'Habilidades y experiencia en la gestión de proyectos de desarrollo de software': ['¿La planificación y seguimiento del sprint aprovecharon la experiencia previa del equipo? ¿Qué lecciones aplicaremos en el futuro?',
+       '¿Identificamos brechas en la gestión de riesgos o recursos que debamos abordar con mayor experiencia?'],
+
   };
 
   const toggleQuestions = () => {
@@ -132,7 +156,7 @@ export default function RetrospectiveSessionPage() {
       </button>
       {showQuestions && retrospective.fsh && (
         <div>
-          <h3>Preguntas para {retrospective.fsh}:</h3>
+          <h3>Preguntas:</h3>
           <ul>
             {(questionsMapping[retrospective.fsh] || []).map((q, index) => (
               <li key={index}>{q}</li>
