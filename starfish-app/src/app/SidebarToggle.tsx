@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import styles from './page.module.css';
 
 interface CurrentUser {
@@ -12,16 +13,21 @@ export default function SidebarToggle({ children }: { children: React.ReactNode 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
+    // Se lee el estado actualizado de autenticación cada vez que cambia la ruta
     const logged = localStorage.getItem('isLoggedIn');
     setIsLoggedIn(logged === 'true');
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
+    } else {
+      setCurrentUser(null);
     }
-  }, []);
+  }, [pathname]);
 
+  const handleLinkClick = () => setSidebarOpen(true);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   return (
@@ -39,29 +45,55 @@ export default function SidebarToggle({ children }: { children: React.ReactNode 
               <ul>
                 {!isLoggedIn ? (
                   <>
-                    <li><Link href="/register">Registrarse</Link></li>
-                    <li><Link href="/login">Iniciar Sesión</Link></li>
+                    <li>
+                      <Link href="/register" onClick={handleLinkClick}>
+                        Registrarse
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/login" onClick={handleLinkClick}>
+                        Iniciar Sesión
+                      </Link>
+                    </li>
                   </>
                 ) : currentUser?.role === 'admin' ? (
                   <>
-                    <li><Link href="/">Home</Link></li>
-                    <li><Link href="/members">Gestionar Miembros</Link></li>
-                    {/* El admin no crea retrospectiva */}
+                    <li>
+                      <Link href="/" onClick={handleLinkClick}>
+                        Home
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/members" onClick={handleLinkClick}>
+                        Gestionar Miembros
+                      </Link>
+                    </li>
                   </>
                 ) : currentUser?.role === 'scrum-master' ? (
                   <>
-                    <li><Link href="/">Home</Link></li>
-                    <li><Link href="/create-retrospective">Crear Retrospectiva</Link></li>
-                    <li><Link href="/select-fsh">Seleccionar FSH</Link></li>
+                    <li>
+                      <Link href="/" onClick={handleLinkClick}>
+                        Home
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/create-retrospective" onClick={handleLinkClick}>
+                        Crear Retrospectiva
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/select-fsh" onClick={handleLinkClick}>
+                        Seleccionar FSH
+                      </Link>
+                    </li>
                   </>
                 ) : (
-                  // Usuario normal o invitado aceptado
                   <>
-                    <li><Link href="/dashboard">Dashboard</Link></li>
-                    <li><Link href="/add-actions">Agregar Acciones</Link></li>
-                    <li><Link href="/vote-actions">Votar Acciones</Link></li>
-                    <li><Link href="/retrospective-session">Ingresar a la Retrospectiva</Link></li>
-                    <li><Link href="/view-questions">Ver Preguntas</Link></li>
+                    <li>
+                      <Link href="/dashboard" onClick={handleLinkClick}>
+                        Dashboard
+                      </Link>
+                    </li>
                   </>
                 )}
               </ul>
