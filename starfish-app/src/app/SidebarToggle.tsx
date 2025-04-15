@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import styles from './page.module.css';
 
 interface CurrentUser {
@@ -13,10 +13,10 @@ export default function SidebarToggle({ children }: { children: React.ReactNode 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    // Se lee el estado actualizado de autenticación cada vez que cambia la ruta
     const logged = localStorage.getItem('isLoggedIn');
     setIsLoggedIn(logged === 'true');
     const storedUser = localStorage.getItem('currentUser');
@@ -27,13 +27,22 @@ export default function SidebarToggle({ children }: { children: React.ReactNode 
     }
   }, [pathname]);
 
-  const handleLinkClick = () => setSidebarOpen(true);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUser');
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    router.push('/login');
+  };
+
+  const handleLinkClick = () => setSidebarOpen(true);
   return (
     <div>
       <header className={styles.header}>
-        <h1 className='hola'>Ga - Starfish</h1>
+        <h1 className="hola">Ga - Starfish</h1>
         <button onClick={toggleSidebar} className={styles.menuToggle}>
           {sidebarOpen ? 'Ocultar Menú' : 'Mostrar Menú'}
         </button>
@@ -58,42 +67,19 @@ export default function SidebarToggle({ children }: { children: React.ReactNode 
                   </>
                 ) : currentUser?.role === 'admin' ? (
                   <>
-                    <li>
-                      <Link href="/" onClick={handleLinkClick}>
-                        Home
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/members" onClick={handleLinkClick}>
-                        Gestionar Miembros
-                      </Link>
-                    </li>
+                    <li><Link href="/">Home</Link></li>
+                    <li><Link href="/members">Gestionar Miembros</Link></li>
+                    {/* El admin no crea retrospectiva */}
                   </>
                 ) : currentUser?.role === 'scrum-master' ? (
                   <>
-                    <li>
-                      <Link href="/" onClick={handleLinkClick}>
-                        Home
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/create-retrospective" onClick={handleLinkClick}>
-                        Crear Retrospectiva
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/select-fsh" onClick={handleLinkClick}>
-                        Seleccionar FSH
-                      </Link>
-                    </li>
+                    <li><Link href="/">Home</Link></li>
+                    <li><Link href="/create-retrospective">Crear Retrospectiva</Link></li>
                   </>
                 ) : (
+                  // Usuario normal o invitado aceptado
                   <>
-                    <li>
-                      <Link href="/dashboard" onClick={handleLinkClick}>
-                        Dashboard
-                      </Link>
-                    </li>
+                    <li><Link href="/dashboard">Dashboard</Link></li>
                   </>
                 )}
               </ul>
