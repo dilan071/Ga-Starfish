@@ -103,8 +103,8 @@ export default function MembersPage() {
               onChange={e => handleAssignGroupRole(u.email, e.target.value)}
             >
               <option value="">Ninguno</option>
-              <option value="scrum-master">Scrum Master</option>
-              <option value="user">Usuario Normal</option>
+              <option value="Scrum Master">Scrum Master</option>
+              <option value="Desarrollador">Desarrollador</option>
             </select>
             <br />
             <button onClick={() => toggleUserSelection(u)}>
@@ -134,3 +134,4 @@ export default function MembersPage() {
     </div>
   );
 }
+
