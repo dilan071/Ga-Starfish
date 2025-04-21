@@ -1,9 +1,9 @@
+// RetrospectiveSessionPage.tsx
 'use client';
 import { useState, useEffect } from 'react';
-
 import { useSearchParams } from 'next/navigation';
-
-
+import SidebarToggle from '../SidebarToggle';
+import styles from './Retrospective-Session.module.css';
 
 export default function RetrospectiveSessionPage() {
   const [retrospective, setRetrospective] = useState<any>(null);
@@ -251,81 +251,70 @@ export default function RetrospectiveSessionPage() {
   if (!retrospective) return <div>No hay retrospectiva activa.</div>;
   if (!isAuthorized) return <div>No tienes permiso para ver esta retrospectiva.</div>;
 
+
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>Retrospectiva: {retrospective.title}</h2>
-      <p>{retrospective.description}</p>
-      <p>
-        <strong>Grupo:</strong> {retrospective.assignedGroup}
-      </p>
-      {retrospective.fsh && (
-        <p>
-          FSH: <span style={{ color: 'blue' }}>{retrospective.fsh}</span>
-        </p>
-      )}
-
-      {retrospective.closed && (
-        <p style={{ color: 'red' }}><strong>Esta retrospectiva está cerrada.</strong></p>
-      )}
-
-      {/* Botón para cerrar la retrospectiva (solo visible para el Scrum Master creador y si aún está abierta) */}
-      {currentUser?.email && retrospective?.createdBy && !retrospective?.closed && (
-  currentUser.email.trim().toLowerCase() === retrospective.createdBy.trim().toLowerCase() ? (
-      <button onClick={handleCloseRetrospective} style={{ backgroundColor: 'red', color: 'white', marginBottom: '1rem' }}>
-      Cerrar Retrospectiva
-      </button>
-      ) : (
-    <p>No tienes permiso para cerrar esta retrospectiva.</p>
-      )
-    )}
-
-
-      <hr />
-      <h3>Agregar Acción</h3>
-      <form onSubmit={handleAddAction}>
-        <input 
-          type="text"
-          placeholder="Escribe tu acción"
-          value={actionText}
-          onChange={e => setActionText(e.target.value)}
-          disabled={retrospective.closed} // Deshabilitado si está cerrada
-        />
-        <button type="submit" disabled={retrospective.closed}>
-          Agregar Acción
-        </button>
-      </form>
-
-      <hr />
-      <h3>Acciones Agregadas</h3>
-      {retrospective.actions && retrospective.actions.length > 0 ? (
-        <ul>
-          {retrospective.actions.map((action: any) => (
-            <li key={action.id}>
-              {action.text} <em>({action.createdBy})</em> - Votos: {action.voteCount}
-              {!hasVoted && currentUser && !retrospective.closed && (
-                <button onClick={() => handleVote(action.id)}>Votar</button>
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No se han agregado acciones aún.</p>
-      )}
-
-      <hr />
-      <button onClick={toggleQuestions}>
-        {showQuestions ? 'Ocultar Preguntas' : 'Ver Preguntas'}
-      </button>
-      {showQuestions && retrospective.fsh && (
-        <div>
-          <h3>Preguntas:</h3>
-          <ul>
-            {(questionsMapping[retrospective.fsh] || []).map((q, index) => (
-              <li key={index}>{q}</li>
-            ))}
-          </ul>
+    <main className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.logoContainer}>
+          <img
+            src="/img/starfish.png"
+            alt="Ga-Starfish Logo"
+            className={styles.logoImage}
+          />
+          <span className={styles.projectName}>Ga-Starfish</span>
         </div>
-      )}
-    </div>
+        <h1 className={styles.pageTitle}>
+          Retrospectiva
+        </h1>
+        <div className={styles.menuWrapper}>
+          <SidebarToggle> </SidebarToggle>
+        </div>
+      </header>
+
+      <section className={styles.sessionSection}>
+        <div className={styles.infoGroup}>
+          <p>
+            <strong>Retrospectiva:</strong> {retrospective.title}
+          </p>
+          <p>
+            <strong>Grupo:</strong> {retrospective.assignedGroup}
+          </p>
+          {retrospective.fsh && (
+            <p>
+              <strong>FSH:</strong> {retrospective.fsh}
+            </p>
+          )}
+        </div>
+
+        {currentUser.email === retrospective.createdBy &&
+          !retrospective.closed && (
+            <button
+              onClick={handleCloseRetrospective}
+              className={styles.enterBtn}
+            >
+              Cerrar Retrospectiva
+            </button>
+          )}
+
+        <div className={styles.infoGroup}>
+          <label>
+            <strong>Técnica Starfish:</strong>
+          </label>
+        </div>
+
+        <div className={styles.buttonGroup}>
+          <button>Hacer más</button>
+          <button>Hacer menos</button>
+          <button>Continuar haciendo</button>
+          <button>Dejar de hacer</button>
+          <button>Comenzar a hacer</button>
+        </div>
+          
+        <div className="hide">
+          {/* Aquí permanece el formulario de agregar acción pero oculto */}
+        </div>
+      </section>
+    </main>
   );
 }
+
