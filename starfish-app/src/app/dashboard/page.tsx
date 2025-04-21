@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
+import SidebarToggle from '../SidebarToggle';
+import styles from './Dashboard.module.css';
 
 export default function DashboardPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -14,27 +16,23 @@ export default function DashboardPage() {
     const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
     if (!user) {
       router.push('/login');
-    } else {
-      const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-      const updatedUser = allUsers.find((u: any) => u.email === user.email);
-      setCurrentUser(updatedUser);
-      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      return;
+    }
+    const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const updated = allUsers.find((u: any) => u.email === user.email);
+    setCurrentUser(updated);
+    localStorage.setItem('currentUser', JSON.stringify(updated));
 
-      // Cargar retrospectivas del grupo actual
-      const storedRetrospectives = localStorage.getItem('retrospectives');
-      if (storedRetrospectives && updatedUser.assignedGroup) {
-        const allRetros = JSON.parse(storedRetrospectives);
-        const filteredRetros = allRetros.filter((retro: any) =>
-          retro.assignedGroup &&
-          typeof retro.assignedGroup === 'string' &&
-          retro.assignedGroup.trim() === updatedUser.assignedGroup.trim()
+    // cargar y filtrar
+    const stored = localStorage.getItem('retrospectives');
+    if (stored && updated.assignedGroup) {
+      const allRetros = JSON.parse(stored);
+      const filtered = allRetros
+        .filter((r: any) => r.assignedGroup?.trim() === updated.assignedGroup.trim())
+        .sort((a: any, b: any) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        // Ordenar descendientemente por fecha de creación
-        filteredRetros.sort(
-          (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setRetrospectives(filteredRetros);
-      }
+      setRetrospectives(filtered);
     }
   }, [router]);
 
@@ -47,75 +45,65 @@ export default function DashboardPage() {
     );
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>Dashboard</h2>
-      <p>
-        <strong>Grupo:</strong> {currentUser.assignedGroup}
-      </p>
-      <p>
-        <strong>Rol en el grupo:</strong> {currentUser.groupRole || 'N/A'}
-      </p>
+    <main className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.logoContainer}>
+          <img src="/img/starfish.png" alt="Ga-Starfish Logo" className={styles.logoImage} />
+          <span className={styles.projectName}>Ga-Starfish</span>
+        </div>
+        <h1 className={styles.pageTitle}>Página Principal</h1>
+        <div className={styles.menuWrapper}>
+          <SidebarToggle>­</SidebarToggle>
+        </div>
+      </header>
 
-      <div style={{ marginBottom: '1rem' }}>
-        {/* Agregar enlace para ir a la nueva página de lista de retrospectivas */}
-        <Link href="/retrospective-list">
-            Ver todas las retrospectivas del grupo
-        </Link>
-      </div>
-
-      <div>
-        <h3>Retrospectivas Recientes</h3>
+      {/* 1. Listado de retrospectivas */}
+      <section className={styles.retrosList}>
+        <h2>Retrospectivas Recientes</h2>
         {retrospectives.length === 0 ? (
-          <p>No hay retrospectivas creadas.</p>
+          <h3>No hay retrospectivas creadas.</h3>
         ) : (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {retrospectives.slice(0, 3).map((retro: any, index: number) => (
-              <li
-                key={index}
-                style={{
-                  marginBottom: '1rem',
-                  border: '1px solid #ccc',
-                  padding: '0.5rem',
-                  borderRadius: '4px'
-                }}
-              >
+          retrospectives.slice(0, 5).map((retro, i) => (
+            <div key={i} className={styles.retroCard}>
+              <div className={styles.retroInfo}>
                 <h4>{retro.title}</h4>
-                <p>{retro.description}</p>
-                <p>
-                  <strong>FSH:</strong> {retro.fsh}
-                </p>
-                <p>
-                  <strong>Creada:</strong> {new Date(retro.createdAt).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Estado:</strong> {retro.closed ? 'Cerrada' : 'Abierta'}
-                </p>
-                {/* Puedes agregar más botones o acciones para cada retrospectiva aquí */}
-              </li>
-            ))}
-          </ul>
+                <p><strong>Descripción:</strong> {retro.description}</p>
+                <span><strong>FSH:</strong> {retro.fsh}</span>
+                <span>
+                  <strong>Creada:</strong>{' '}
+                  {new Date(retro.createdAt).toLocaleString()}
+                </span>
+                <span><strong>Estado:</strong> {retro.closed ? 'Cerrada' : 'Abierta'}</span>
+              </div>
+              <button
+                className={styles.enterBtn}
+                onClick={() => router.push(`/retrospective-session?id=${retro.id}`)}
+              >
+                Ingresar a la Retrospectiva
+              </button>
+            </div>
+          ))
         )}
-      </div>
+      </section>
 
-      {currentUser.groupRole === 'Scrum Master' ? (
-        <div>
-          <h3>Opciones de Scrum Master:</h3>
-          <ul>
-            <li>
-              <Link href="/create-retrospective">Crear Retrospectiva</Link>
-            </li>
-          </ul>
-        </div>
-      ) : (
-        <div>
-          <h3>Opciones disponibles:</h3>
-          <ul>
-            <li>Consulta las retrospectivas del grupo arriba.</li>
-          </ul>
-        </div>
-      )}
-      <button onClick={handleLogout}>Cerrar Sesión</button>
-    </div>
+      {/* 2. Menú lateral fijo */}
+      <aside className={styles.menuAside}>
+        <button
+          className={styles.btnView}
+          onClick={() => router.push('/retrospective-list')}
+        >
+          Ingresar a las Retrospectivas
+        </button>
+        {currentUser.groupRole === 'Scrum Master' && (
+          <button
+            className={styles.btnCreate}
+            onClick={() => router.push('/create-retrospective')}
+          >
+            Crear Retrospectiva
+          </button>
+        )}
+      </aside>
+    </main>
   );
 }
 
