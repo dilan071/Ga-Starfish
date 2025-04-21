@@ -1,137 +1,175 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, JSX, Children } from 'react';
+import styles from './Members.module.css';
+import SidebarToggle from '../SidebarToggle';
 
-export default function MembersPage() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [groupName, setGroupName] = useState('');
-  const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
-  const router = useRouter();
+// Define a User type for state
+type User = {
+  email: string;
+  role: string;
+  groupRole?: string;
+  assignedGroup?: string;
+};
 
-  const loadUsers = () => {
-    const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    const nonAdmin = allUsers.filter((u: any) => u.role !== 'admin');
-    setUsers(nonAdmin);
+export default function MembersPage(): JSX.Element {
+  const [users, setUsers] = useState<User[]>([]);
+  const [groupName, setGroupName] = useState<string>('');
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+
+  // Carga inicial de usuarios
+  const loadUsers = (): void => {
+    const raw = localStorage.getItem('users') || '[]';
+    const all = JSON.parse(raw) as User[];
+    setUsers(all.filter(u => u.role !== 'admin'));
   };
 
   useEffect(() => {
     loadUsers();
   }, []);
 
-  const handleAssignGroupRole = (email: string, newRole: string) => {
-    let allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    allUsers = allUsers.map((u: any) => {
-      if (u.email === email) {
-        return { ...u, groupRole: newRole };
-      }
-      return u;
-    });
-    localStorage.setItem('users', JSON.stringify(allUsers));
+  // Asigna rol en grupo
+  const handleAssignGroupRole = (email: string, newRole: string): void => {
+    const raw = localStorage.getItem('users') || '[]';
+    const all = (JSON.parse(raw) as User[]).map(u =>
+      u.email === email ? { ...u, groupRole: newRole } : u
+    );
+    localStorage.setItem('users', JSON.stringify(all));
     alert(`Rol asignado a ${email}: ${newRole}`);
     loadUsers();
   };
 
-  const toggleUserSelection = (user: any) => {
-    const exists = selectedUsers.find(u => u.email === user.email);
-    if (exists) {
-      setSelectedUsers(selectedUsers.filter(u => u.email !== user.email));
-    } else {
-      setSelectedUsers([...selectedUsers, user]);
-    }
+  // Agrega o quita usuario de la selección
+  const toggleUserSelection = (user: User): void => {
+    setSelectedUsers(prev =>
+      prev.some(u => u.email === user.email)
+        ? prev.filter(u => u.email !== user.email)
+        : [...prev, user]
+    );
   };
 
-  const handleCreateGroup = () => {
+  // Elimina usuario completamente
+  const handleDeleteUser = (email: string): void => {
+    if (!confirm(`¿Eliminar usuario ${email} de forma permanente?`)) return;
+    const raw = localStorage.getItem('users') || '[]';
+    const all = (JSON.parse(raw) as User[]).filter(u => u.email !== email);
+    localStorage.setItem('users', JSON.stringify(all));
+    alert(`Usuario ${email} eliminado.`);
+    // También lo quitamos de la selección si estaba
+    setSelectedUsers(prev => prev.filter(u => u.email !== email));
+    loadUsers();
+  };
+
+  // Crea y asigna un nuevo grupo
+  const handleCreateGroup = (): void => {
     if (!groupName.trim()) {
       alert('Debes ingresar un nombre para el grupo');
       return;
     }
-    
-    const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    const currentGroupMembers = allUsers.filter((u: any) => u.assignedGroup === groupName.trim());
-    
-
-    const totalMembersAfter = currentGroupMembers.length + selectedUsers.length;
-    if (totalMembersAfter > 5) {
-      alert(`El grupo "${groupName}" no puede tener más de 5 integrantes. Actualmente tiene ${currentGroupMembers.length} miembros.`);
+    const raw = localStorage.getItem('users') || '[]';
+    const all = JSON.parse(raw) as User[];
+    const groupMembers = all.filter(u => u.assignedGroup === groupName.trim());
+    // Validaciones...
+    if (groupMembers.length + selectedUsers.length > 5) {
+      alert(`El grupo "${groupName}" no puede tener más de 5 integrantes.`);
       return;
     }
-    
-    // Verificar el total de scrum-master en el grupo: 
-    // Consideramos los que ya estan asignados y los nuevos seleccionados con rol scrum-master
-    const currentScrumMasters = currentGroupMembers.filter((u: any) => u.groupRole === 'scrum-master').length;
-    const newScrumMasters = selectedUsers.filter((u: any) => u.groupRole === 'scrum-master').length;
-    if (currentScrumMasters + newScrumMasters > 1) {
+    const currentSM = groupMembers.filter(u => u.groupRole === 'scrum-master').length;
+    const newSM = selectedUsers.filter(u => u.groupRole === 'scrum-master').length;
+    if (currentSM + newSM > 1) {
       alert('Solo se permite un scrum-master por grupo');
       return;
     }
-    
-    // Actualizar la asignación: a cada usuario seleccionado se le asigna el grupo (si no está ya asignado)
-    const updatedUsers = allUsers.map((u: any) => {
-      if (selectedUsers.find((s: any) => s.email === u.email)) {
-        return { ...u, assignedGroup: groupName.trim() };
-      }
-      return u;
-    });
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-    alert(`Grupo "${groupName}" creado y asignado a los usuarios seleccionados`);
+    const updated = all.map(u =>
+      selectedUsers.some(s => s.email === u.email)
+        ? { ...u, assignedGroup: groupName.trim() }
+        : u
+    );
+    localStorage.setItem('users', JSON.stringify(updated));
+    alert(`Grupo "${groupName}" creado y asignado`);
     setGroupName('');
     setSelectedUsers([]);
     loadUsers();
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('currentUser');
-    localStorage.setItem('isLoggedIn', 'false');
-    router.push('/login');
-  };
-
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>Panel de Administración (Admin)</h2>
-      <button onClick={handleLogout}>Cerrar Sesión</button>
+    <main className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.logoContainer}>
+          <img src="/img/starfish.png" alt="Ga-Starfish Logo" className={styles.logoImage} />
+          <span className={styles.projectName}>Ga-Starfish</span>
+        </div>
 
-      <h3>Usuarios Registrados (No Admin):</h3>
-      <ul>
-        {users.map((u, idx) => (
-          <li key={idx} style={{ marginBottom: '1rem' }}>
-            <strong>{u.email}</strong> – Rol en grupo: {u.groupRole || 'N/A'} – Grupo: {u.assignedGroup || 'N/A'}
-            <br />
-            <label>Asignar rol en grupo:</label>
-            <select
-              value={u.groupRole || ''}
-              onChange={e => handleAssignGroupRole(u.email, e.target.value)}
-            >
-              <option value="">Ninguno</option>
-              <option value="Scrum Master">Scrum Master</option>
-              <option value="Desarrollador">Desarrollador</option>
-            </select>
-            <br />
-            <button onClick={() => toggleUserSelection(u)}>
-              {selectedUsers.find(s => s.email === u.email) ? 'Quitar del grupo' : 'Agregar al grupo'}
-            </button>
-          </li>
-        ))}
-      </ul>
+        <h1 className={styles.pageTitle}>Panel de Administración</h1>
 
-      <h3>Crear Grupo</h3>
-      <div>
-        <input 
+        <div className={styles.menuWrapper}>
+          <SidebarToggle>­</SidebarToggle>
+        </div>
+      </header>
+
+      <section className={styles.usersList}>
+        <h2>Usuarios Registrados</h2>
+        {users.length === 0 ? (
+          <span><h3>No hay usuarios registrados.</h3></span>
+        ) : (
+        users.map(u => (
+          <div key={u.email} className={styles.userCard}>
+            <div className={styles.userInfo}>
+              <strong>{u.email}</strong>
+              <span><strong>Rol:</strong> {u.groupRole || 'N/A'}</span>
+              <span><strong>Grupo:</strong> {u.assignedGroup || 'N/A'}</span>
+            </div>
+            <div className={styles.actions}>
+              <label>Asignar rol:</label>
+              <select
+                value={u.groupRole || ''}
+                onChange={e => handleAssignGroupRole(u.email, e.target.value)}
+                className={styles.select}
+              >
+                <option value="">Ninguno</option>
+                <option value="Desarrollador">Desarrollador</option>
+                <option value="Scrum Master">Scrum Master</option>
+              </select>
+              <button
+                className={styles.selectBtn}
+                onClick={() => toggleUserSelection(u)}
+              >
+                {selectedUsers.some(s => s.email === u.email) ? 'Quitar' : 'Agregar'}
+              </button>
+              <button
+                className={styles.deleteBtn}
+                onClick={() => handleDeleteUser(u.email)}
+              >Eliminar</button>
+            </div>
+          </div>
+        ))
+        )}
+      </section>
+
+      <aside className={styles.groupCreator}>
+        <h2>Crear Grupo</h2>
+        <input
+          className={styles.input}
           type="text"
           placeholder="Nombre del grupo"
           value={groupName}
           onChange={e => setGroupName(e.target.value)}
         />
-        <button onClick={handleCreateGroup}>Crear y Asignar Grupo</button>
-      </div>
-
-      <h4>Usuarios seleccionados:</h4>
-      <ul>
-        {selectedUsers.map((u, idx) => (
-          <li key={idx}>{u.email} – Rol: {u.groupRole || 'No asignado'}</li>
-        ))}
-      </ul>
-    </div>
+        <button className={styles.button} onClick={handleCreateGroup}>
+          Crear y Asignar
+        </button>
+        <div className={styles.selectedUsers}>
+          <h3>Usuarios seleccionados:</h3>
+          {selectedUsers.length > 0 ? (
+            <ul>
+              {selectedUsers.map(u => (
+                <li key={u.email}>{u.email} – {u.groupRole || 'Sin rol'}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>Ninguno</p>
+          )}
+        </div>
+      </aside>
+    </main>
   );
 }
-
