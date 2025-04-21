@@ -1,11 +1,13 @@
+// CreateRetrospectivePage.tsx
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import SidebarToggle from '../SidebarToggle';
+import styles from './Create-Retrospective.module.css';
 
 export default function CreateRetrospectivePage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  
   const [fsh, setFsh] = useState('');
   const router = useRouter();
 
@@ -15,62 +17,99 @@ export default function CreateRetrospectivePage() {
       alert('Debes seleccionar un FSH para analizar');
       return;
     }
-    const retrospective = {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    if (!currentUser || !currentUser.assignedGroup) {
+      alert('No se pudo determinar el grupo del Scrum Master');
+      return;
+    }
+    const newRetro = {
+      id: Date.now().toString(),
       title,
       description,
       fsh,
+      assignedGroup: currentUser.assignedGroup,
+      createdBy: currentUser.email,
       createdAt: new Date(),
       actions: [],
-      votes: {}  
+      votes: {}
     };
-    localStorage.setItem('retrospective', JSON.stringify(retrospective));
+    const stored = localStorage.getItem('retrospectives');
+    const retros = stored ? JSON.parse(stored) : [];
+    retros.push(newRetro);
+    localStorage.setItem('retrospectives', JSON.stringify(retros));
     alert('Retrospectiva creada exitosamente');
-    router.push('/retrospective-session');
+    router.push('/retrospective-list');
   };
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>Crear Retrospectiva (Scrum Master)</h2>
-      <form onSubmit={handleCreate}>
-        <div>
-          <label>Título:</label><br />
-          <input 
-            type="text" 
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            required 
-          />
+    <main className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.logoContainer}>
+          <img src="/img/starfish.png" alt="Ga-Starfish Logo" className={styles.logoImage} />
+          <span className={styles.projectName}>Ga-Starfish</span>
         </div>
-        <div>
-          <label>Descripción:</label><br />
-          <textarea 
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            required
-          />
+        <h1 className={styles.pageTitle}>Crear Retrospectiva</h1>
+        <div className={styles.menuWrapper}>
+          <SidebarToggle> </SidebarToggle>
         </div>
-        <div>
-          <label>Seleccionar FSH:</label><br />
-          <select value={fsh} onChange={e => setFsh(e.target.value)} required>
-            <option value="">Ninguno</option>
-            <option value="Comunicación">Comunicación</option>
-            <option value="Compromiso">Compromiso</option>
-            <option value="Colaboración">Colaboración</option>
-            <option value="Motivación">Motivación</option>
-            <option value="Satisfacción laboral">Satisfacción laboral</option>
-            <option value="Inteligencia emocional">Inteligencia emocional</option>
-            <option value="Cohesión de equipo">Cohesión de equipo</option>
-            <option value="Empatía y relaciones">Empatía y relaciones</option>
-            <option value="Liderazgo">Liderazgo</option>
-            <option value="Autonomía">Autonomía</option>
-            <option value="Innovación">Innovación</option>
-            <option value="Habilidades y experiencia en el desarrollo de software">Habilidades y experiencia en el desarrollo de software</option>
-            <option value="Habilidades y experiencia en la gestión de proyectos de desarrollo de software">Habilidades y experiencia en la gestión de proyectos de desarrollo de software</option>
-          </select>
-        </div>
-        <button type="submit">Crear Retrospectiva</button>
-      </form>
-    </div>
+      </header>
+
+      <section className={styles.formSection}>
+        <form onSubmit={handleCreate}>
+          <div className={styles.formGroup}>
+            <label htmlFor="title"><strong>Título:</strong></label>
+            <input
+              id="title"
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              required
+              className={styles.input}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="description"><strong>Descripción</strong></label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              required
+              className={`${styles.textarea}`}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="fsh"><strong>Seleccionar FSH:</strong></label>
+            <select
+              id="fsh"
+              value={fsh}
+              onChange={e => setFsh(e.target.value)}
+              required
+              className="select"
+            >
+              <option value="">Ninguno</option>
+              <option value="Comunicación">Comunicación</option>
+              <option value="Compromiso">Compromiso</option>
+              <option value="Colaboración">Colaboración</option>
+              <option value="Motivación">Motivación</option>
+              <option value="Satisfacción laboral">Satisfacción laboral</option>
+              <option value="Inteligencia emocional">Inteligencia emocional</option>
+              <option value="Cohesión de equipo">Cohesión de equipo</option>
+              <option value="Empatía y relaciones interpersonales">Empatía y relaciones interpersonales</option>
+              <option value="Liderazgo">Liderazgo</option>
+              <option value="Autonomía">Autonomía</option>
+              <option value="Innovación">Innovación</option>
+              <option value="Habilidades y experiencia en el proceso de desarrollo de software">Habilidades y experiencia en el proceso de desarrollo de software</option>
+              <option value="Habilidades y experiencia en la gestión de proyectos de desarrollo de software">Habilidades y experiencia en la gestión de proyectos de desarrollo de software</option>
+            </select>
+          </div>
+
+          <button type="submit" className={styles.button}>
+            Crear Retrospectiva
+          </button>
+        </form>
+      </section>
+    </main>
   );
 }
-
