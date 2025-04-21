@@ -1,0 +1,120 @@
+:root {
+    --control-height: 2.5rem;
+  }
+  
+  .container {
+
+    min-width: 1040px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .header {
+    top: 60px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: space-between;
+    background-color: #fff;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  .logoContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .logoImage {
+    width: 60px;
+    height: auto;
+  }
+  
+  .projectName {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #e53e3e;
+  }
+  
+  .pageTitle {
+    flex: 1;
+    text-align: center;
+    font-size: 1.5rem;
+    margin: 0;
+  }
+  
+  .menuWrapper {
+    flex: 0 0 auto;
+  }
+  
+  .menuButton {
+    padding: 0.5rem 1rem;
+    background-color: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .menuButton:hover {
+    background-color: #dc2626;
+  }
+  
+  .formSection {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .formGroup {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .formGroup label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  
+  .input,
+  .textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  
+  .textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+  
+  /* select keeps your global .select styles */
+  
+  .button {
+    width: 100%;
+    height: var(--control-height);
+    background-color: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .button:hover {
+    background-color: #dc2626;
+  }
+  
