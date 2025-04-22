@@ -60,7 +60,7 @@ export default function RegisterPage() {
           <label>Tipo de Usuario:</label><br />
           <select value={userType} onChange={e => setUserType(e.target.value)}>
             <option value="admin">Admin</option>
-            <option value="user">Usuario Normal</option>
+            <option value="user">Desarrollador</option>
           </select>
         </div>
         <button type="submit">Registrarse</button>

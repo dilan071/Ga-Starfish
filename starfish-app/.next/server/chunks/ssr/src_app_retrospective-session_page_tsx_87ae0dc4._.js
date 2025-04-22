@@ -19,67 +19,26 @@ function RetrospectiveSessionPage() {
     const [hasVoted, setHasVoted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [showQuestions, setShowQuestions] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [currentUser, setCurrentUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
-    const [userVotedAction, setUserVotedAction] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
-    // Función para obtener avatar de un email
-    const getAvatar = (email)=>{
-        const all = JSON.parse(localStorage.getItem('users') || '[]');
-        const u = all.find((x)=>x.email === email);
-        return u?.avatar || '/default-avatar.png';
-    };
-    // Cargar usuario y retrospectiva (incluye programadas que ya estén activas)
+    // Cargar retrospectiva y usuario actual
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        // 1. Usuario
+        const storedRetro = localStorage.getItem('retrospective');
+        if (storedRetro) {
+            setRetrospective(JSON.parse(storedRetro));
+        }
         const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
         setCurrentUser(user);
-        // 2. Intentar cargar retrospectiva "normal"
-        let retro = null;
-        const storedNormal = localStorage.getItem('retrospective');
-        if (storedNormal) {
-            retro = JSON.parse(storedNormal);
-        } else {
-            // 3. Si no existe, buscar en programadas ya activas
-            const scheduled = JSON.parse(localStorage.getItem('scheduledRetrospectives') || '[]');
-            const now = new Date();
-            const activeList = scheduled.filter((r)=>new Date(r.scheduledAt) <= now);
-            if (activeList.length > 0) {
-                activeList.sort((a, b)=>new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
-                retro = activeList[0];
-                localStorage.setItem('retrospective', JSON.stringify(retro));
-            }
-        }
-        if (retro) {
-            setRetrospective(retro);
-        }
     }, []);
-    // Determinar si el usuario ya votó
+    // Revisar si el usuario ya ha votado
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         if (retrospective && currentUser && retrospective.votes) {
-            const voteId = retrospective.votes[currentUser.email];
-            if (voteId) {
+            if (retrospective.votes[currentUser.email]) {
                 setHasVoted(true);
-                setUserVotedAction(voteId);
             }
         }
     }, [
         retrospective,
         currentUser
     ]);
-    // Función para otorgar puntos
-    const addPoint = (type)=>{
-        if (!currentUser) return;
-        const record = JSON.parse(localStorage.getItem('points') || '[]');
-        const entry = {
-            email: currentUser.email,
-            type,
-            date: new Date().toISOString(),
-            points: type === 'vote' ? 1 : 2
-        };
-        localStorage.setItem('points', JSON.stringify([
-            ...record,
-            entry
-        ]));
-    };
-    // Agregar nueva acción (comentario)
     const handleAddAction = (e)=>{
         e.preventDefault();
         if (!actionText.trim()) return;
@@ -89,7 +48,7 @@ function RetrospectiveSessionPage() {
             createdBy: currentUser?.email || 'desconocido',
             voteCount: 0
         };
-        const updated = {
+        const updatedRetro = {
             ...retrospective,
             actions: retrospective.actions ? [
                 ...retrospective.actions,
@@ -99,61 +58,61 @@ function RetrospectiveSessionPage() {
             ],
             votes: retrospective.votes || {}
         };
-        localStorage.setItem('retrospective', JSON.stringify(updated));
-        setRetrospective(updated);
+        localStorage.setItem('retrospective', JSON.stringify(updatedRetro));
+        setRetrospective(updatedRetro);
         setActionText('');
-        addPoint('comment');
     };
-    // Votar o cambiar voto
     const handleVote = (actionId)=>{
         if (!currentUser) return;
-        const prevVote = retrospective.votes?.[currentUser.email];
-        const updatedActions = retrospective.actions.map((a)=>{
-            if (a.id === actionId) return {
-                ...a,
-                voteCount: a.voteCount + 1
-            };
-            if (a.id === prevVote) return {
-                ...a,
-                voteCount: Math.max(0, a.voteCount - 1)
-            };
-            return a;
+        if (retrospective.votes && retrospective.votes[currentUser.email]) {
+            alert('Ya has votado');
+            return;
+        }
+        const updatedActions = retrospective.actions.map((action)=>{
+            if (action.id === actionId) {
+                return {
+                    ...action,
+                    voteCount: action.voteCount + 1
+                };
+            }
+            return action;
         });
         const updatedVotes = {
             ...retrospective.votes,
             [currentUser.email]: actionId
         };
-        const updated = {
+        const updatedRetro = {
             ...retrospective,
             actions: updatedActions,
             votes: updatedVotes
         };
-        localStorage.setItem('retrospective', JSON.stringify(updated));
-        setRetrospective(updated);
+        localStorage.setItem('retrospective', JSON.stringify(updatedRetro));
+        setRetrospective(updatedRetro);
         setHasVoted(true);
-        setUserVotedAction(actionId);
-        addPoint('vote');
     };
-    // Preguntas guiadas por FSH
+    // Ejemplo de mapeo de preguntas (puedes ajustarlo según tus necesidades)
     const questionsMapping = {
-        FSH1: [
+        'FSH1': [
             'Pregunta 1 para FSH1',
             'Pregunta 2 para FSH1'
         ],
-        FSH2: [
+        'FSH2': [
             'Pregunta 1 para FSH2',
             'Pregunta 2 para FSH2'
         ],
-        FSH3: [
+        'FSH3': [
             'Pregunta 1 para FSH3',
             'Pregunta 2 para FSH3'
         ]
+    };
+    const toggleQuestions = ()=>{
+        setShowQuestions(!showQuestions);
     };
     if (!retrospective) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         children: "No hay retrospectiva activa."
     }, void 0, false, {
         fileName: "[project]/src/app/retrospective-session/page.tsx",
-        lineNumber: 127,
+        lineNumber: 88,
         columnNumber: 30
     }, this);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -168,14 +127,14 @@ function RetrospectiveSessionPage() {
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 131,
+                lineNumber: 92,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                 children: retrospective.description
             }, void 0, false, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 132,
+                lineNumber: 93,
                 columnNumber: 7
             }, this),
             retrospective.fsh && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -188,25 +147,25 @@ function RetrospectiveSessionPage() {
                         children: retrospective.fsh
                     }, void 0, false, {
                         fileName: "[project]/src/app/retrospective-session/page.tsx",
-                        lineNumber: 135,
+                        lineNumber: 96,
                         columnNumber: 16
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 134,
+                lineNumber: 95,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("hr", {}, void 0, false, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 139,
+                lineNumber: 100,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
                 children: "Agregar Acción"
             }, void 0, false, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 140,
+                lineNumber: 101,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -219,7 +178,7 @@ function RetrospectiveSessionPage() {
                         onChange: (e)=>setActionText(e.target.value)
                     }, void 0, false, {
                         fileName: "[project]/src/app/retrospective-session/page.tsx",
-                        lineNumber: 142,
+                        lineNumber: 103,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -227,126 +186,81 @@ function RetrospectiveSessionPage() {
                         children: "Agregar Acción"
                     }, void 0, false, {
                         fileName: "[project]/src/app/retrospective-session/page.tsx",
-                        lineNumber: 148,
+                        lineNumber: 109,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 141,
+                lineNumber: 102,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("hr", {}, void 0, false, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 151,
+                lineNumber: 112,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
                 children: "Acciones Agregadas"
             }, void 0, false, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 152,
+                lineNumber: 113,
                 columnNumber: 7
             }, this),
-            retrospective.actions?.length ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
-                style: {
-                    listStyle: 'none',
-                    padding: 0
-                },
+            retrospective.actions && retrospective.actions.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
                 children: retrospective.actions.map((action)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                        style: {
-                            display: 'flex',
-                            alignItems: 'center',
-                            margin: '0.5rem 0'
-                        },
                         children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                                src: getAvatar(action.createdBy),
-                                alt: "avatar",
-                                style: {
-                                    width: '32px',
-                                    height: '32px',
-                                    borderRadius: '50%',
-                                    marginRight: '0.5rem'
-                                }
+                            action.text,
+                            " ",
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("em", {
+                                children: [
+                                    "(",
+                                    action.createdBy,
+                                    ")"
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/retrospective-session/page.tsx",
+                                lineNumber: 118,
+                                columnNumber: 29
+                            }, this),
+                            " - Votos: ",
+                            action.voteCount,
+                            !hasVoted && currentUser && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: ()=>handleVote(action.id),
+                                children: "Votar"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                                lineNumber: 160,
-                                columnNumber: 15
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                style: {
-                                    flex: 1
-                                },
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                        children: action.createdBy
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/retrospective-session/page.tsx",
-                                        lineNumber: 166,
-                                        columnNumber: 17
-                                    }, this),
-                                    ": ",
-                                    action.text
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/app/retrospective-session/page.tsx",
-                                lineNumber: 165,
-                                columnNumber: 15
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                style: {
-                                    marginLeft: '1rem'
-                                },
-                                children: [
-                                    action.voteCount,
-                                    " votos",
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                        onClick: ()=>handleVote(action.id),
-                                        disabled: hasVoted,
-                                        style: {
-                                            marginLeft: '0.5rem'
-                                        },
-                                        children: userVotedAction === action.id ? 'Has votado' : 'Votar'
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/retrospective-session/page.tsx",
-                                        lineNumber: 170,
-                                        columnNumber: 17
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/app/retrospective-session/page.tsx",
-                                lineNumber: 168,
-                                columnNumber: 15
+                                lineNumber: 120,
+                                columnNumber: 17
                             }, this)
                         ]
                     }, action.id, true, {
                         fileName: "[project]/src/app/retrospective-session/page.tsx",
-                        lineNumber: 156,
+                        lineNumber: 117,
                         columnNumber: 13
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 154,
+                lineNumber: 115,
                 columnNumber: 9
             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                 children: "No se han agregado acciones aún."
             }, void 0, false, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 182,
+                lineNumber: 126,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("hr", {}, void 0, false, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 185,
+                lineNumber: 129,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                onClick: ()=>setShowQuestions(!showQuestions),
+                onClick: toggleQuestions,
                 children: showQuestions ? 'Ocultar Preguntas' : 'Ver Preguntas'
             }, void 0, false, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 186,
+                lineNumber: 130,
                 columnNumber: 7
             }, this),
             showQuestions && retrospective.fsh && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -354,36 +268,37 @@ function RetrospectiveSessionPage() {
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
                         children: [
                             "Preguntas para ",
-                            retrospective.fsh
+                            retrospective.fsh,
+                            ":"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/retrospective-session/page.tsx",
-                        lineNumber: 191,
+                        lineNumber: 135,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
-                        children: questionsMapping[retrospective.fsh].map((q, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                        children: (questionsMapping[retrospective.fsh] || []).map((q, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                 children: q
-                            }, i, false, {
+                            }, index, false, {
                                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                                lineNumber: 194,
+                                lineNumber: 138,
                                 columnNumber: 15
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/app/retrospective-session/page.tsx",
-                        lineNumber: 192,
+                        lineNumber: 136,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/retrospective-session/page.tsx",
-                lineNumber: 190,
+                lineNumber: 134,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/retrospective-session/page.tsx",
-        lineNumber: 130,
+        lineNumber: 91,
         columnNumber: 5
     }, this);
 }

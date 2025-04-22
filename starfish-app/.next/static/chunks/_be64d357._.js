@@ -31,24 +31,48 @@ function CreateRetrospectivePage() {
     const [recurrence, setRecurrence] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('weekly');
     const [count, setCount] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(1);
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
+    // Datos de usuario actual
+    const currentUser = ("TURBOPACK compile-time truthy", 1) ? JSON.parse(localStorage.getItem('currentUser') || 'null') : ("TURBOPACK unreachable", undefined);
+    const assignedGroup = currentUser?.assignedGroup || '';
+    const createdBy = currentUser?.email || 'unknown';
+    // Guardar en array principal
+    const saveToRetrospectives = (items)=>{
+        const all = JSON.parse(localStorage.getItem('retrospectives') || '[]');
+        localStorage.setItem('retrospectives', JSON.stringify([
+            ...all,
+            ...items
+        ]));
+    };
+    // Crear retrospectiva inmediata
     const handleCreate = (e)=>{
         e.preventDefault();
         if (!fsh) {
-            alert('Debes seleccionar un FSH para analizar');
+            alert('Debes seleccionar un FSH');
             return;
         }
-        const retrospective = {
+        const id = Date.now().toString();
+        const retro = {
+            id,
             title,
             description,
             fsh,
             createdAt: new Date().toISOString(),
+            createdBy,
+            assignedGroup,
             actions: [],
-            votes: {}
+            votes: {},
+            closed: false
         };
-        localStorage.setItem('retrospective', JSON.stringify(retrospective));
+        // Sesión activa
+        localStorage.setItem('retrospective', JSON.stringify(retro));
+        // Agregar a lista
+        saveToRetrospectives([
+            retro
+        ]);
         alert('Retrospectiva creada exitosamente');
         router.push('/retrospective-session');
     };
+    // Programar retrospectivas recurrentes
     const handleSchedule = (e)=>{
         e.preventDefault();
         if (!title || !fsh || !start) {
@@ -59,23 +83,23 @@ function CreateRetrospectivePage() {
         let date = new Date(start);
         for(let i = 0; i < count; i++){
             occurrences.push({
+                id: `${Date.now()}-${i}`,
                 title,
                 description,
                 fsh,
                 scheduledAt: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$formatISO$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["formatISO"])(date),
-                enabled: false,
+                createdAt: new Date().toISOString(),
+                createdBy,
+                assignedGroup,
                 actions: [],
-                votes: {}
+                votes: {},
+                closed: false
             });
             if (recurrence === 'daily') date = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$addDays$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["addDays"])(date, 1);
             else if (recurrence === 'weekly') date = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$addWeeks$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["addWeeks"])(date, 1);
             else date = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$addMonths$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["addMonths"])(date, 1);
         }
-        const prev = JSON.parse(localStorage.getItem('scheduledRetrospectives') || '[]');
-        localStorage.setItem('scheduledRetrospectives', JSON.stringify([
-            ...prev,
-            ...occurrences
-        ]));
+        saveToRetrospectives(occurrences);
         alert('Retrospectivas programadas exitosamente');
         router.push('/dashboard');
     };
@@ -85,10 +109,10 @@ function CreateRetrospectivePage() {
         },
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                children: mode === 'create' ? 'Crear Retrospectiva (Scrum Master)' : 'Programar Retrospectivas Recurrentes'
+                children: mode === 'create' ? 'Crear Retrospectiva' : 'Programar Retrospectivas'
             }, void 0, false, {
                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                lineNumber: 71,
+                lineNumber: 108,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -102,7 +126,7 @@ function CreateRetrospectivePage() {
                         children: "Crear única"
                     }, void 0, false, {
                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                        lineNumber: 74,
+                        lineNumber: 110,
                         columnNumber: 9
                     }, this),
                     ' ',
@@ -112,13 +136,13 @@ function CreateRetrospectivePage() {
                         children: "Programar recurrente"
                     }, void 0, false, {
                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                        lineNumber: 77,
+                        lineNumber: 113,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                lineNumber: 73,
+                lineNumber: 109,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -130,12 +154,12 @@ function CreateRetrospectivePage() {
                                 children: "Título:"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 84,
+                                lineNumber: 120,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 84,
+                                lineNumber: 120,
                                 columnNumber: 33
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -145,13 +169,13 @@ function CreateRetrospectivePage() {
                                 required: true
                             }, void 0, false, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 85,
+                                lineNumber: 121,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                        lineNumber: 83,
+                        lineNumber: 119,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -160,12 +184,12 @@ function CreateRetrospectivePage() {
                                 children: "Descripción:"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 93,
+                                lineNumber: 129,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 93,
+                                lineNumber: 129,
                                 columnNumber: 38
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -174,13 +198,13 @@ function CreateRetrospectivePage() {
                                 required: true
                             }, void 0, false, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 94,
+                                lineNumber: 130,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                        lineNumber: 92,
+                        lineNumber: 128,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -189,12 +213,12 @@ function CreateRetrospectivePage() {
                                 children: "Seleccionar FSH:"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 101,
+                                lineNumber: 137,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 101,
+                                lineNumber: 137,
                                 columnNumber: 42
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -204,10 +228,10 @@ function CreateRetrospectivePage() {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                         value: "",
-                                        children: "Ninguno"
+                                        children: "-- Seleccione --"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 103,
+                                        lineNumber: 139,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -215,7 +239,7 @@ function CreateRetrospectivePage() {
                                         children: "Comunicación"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 104,
+                                        lineNumber: 140,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -223,7 +247,7 @@ function CreateRetrospectivePage() {
                                         children: "Compromiso"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 105,
+                                        lineNumber: 141,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -231,7 +255,7 @@ function CreateRetrospectivePage() {
                                         children: "Colaboración"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 106,
+                                        lineNumber: 142,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -239,7 +263,7 @@ function CreateRetrospectivePage() {
                                         children: "Motivación"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 107,
+                                        lineNumber: 143,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -247,7 +271,7 @@ function CreateRetrospectivePage() {
                                         children: "Satisfacción laboral"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 108,
+                                        lineNumber: 144,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -255,75 +279,19 @@ function CreateRetrospectivePage() {
                                         children: "Inteligencia emocional"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 109,
-                                        columnNumber: 13
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                        value: "Cohesión de equipo",
-                                        children: "Cohesión de equipo"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 110,
-                                        columnNumber: 13
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                        value: "Empatía y relaciones",
-                                        children: "Empatía y relaciones"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 111,
-                                        columnNumber: 13
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                        value: "Liderazgo",
-                                        children: "Liderazgo"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 112,
-                                        columnNumber: 13
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                        value: "Autonomía",
-                                        children: "Autonomía"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 113,
-                                        columnNumber: 13
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                        value: "Innovación",
-                                        children: "Innovación"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 114,
-                                        columnNumber: 13
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                        value: "Habilidades y experiencia en el desarrollo de software",
-                                        children: "Habilidades y experiencia en el desarrollo de software"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 115,
-                                        columnNumber: 13
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                        value: "Habilidades y experiencia en la gestión de proyectos de desarrollo de software",
-                                        children: "Habilidades y experiencia en la gestión de proyectos de desarrollo de software"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 116,
+                                        lineNumber: 145,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 102,
+                                lineNumber: 138,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                        lineNumber: 100,
+                        lineNumber: 136,
                         columnNumber: 9
                     }, this),
                     mode === 'schedule' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -331,16 +299,16 @@ function CreateRetrospectivePage() {
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                        children: "Fecha y hora de inicio:"
+                                        children: "Fecha y hora inicio:"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 123,
+                                        lineNumber: 153,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 123,
-                                        columnNumber: 53
+                                        lineNumber: 153,
+                                        columnNumber: 50
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                         type: "datetime-local",
@@ -349,13 +317,13 @@ function CreateRetrospectivePage() {
                                         required: true
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 124,
+                                        lineNumber: 154,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 122,
+                                lineNumber: 152,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -364,12 +332,12 @@ function CreateRetrospectivePage() {
                                         children: "Periodicidad:"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 132,
+                                        lineNumber: 162,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 132,
+                                        lineNumber: 162,
                                         columnNumber: 43
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -381,7 +349,7 @@ function CreateRetrospectivePage() {
                                                 children: "Diaria"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                                lineNumber: 134,
+                                                lineNumber: 167,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -389,7 +357,7 @@ function CreateRetrospectivePage() {
                                                 children: "Semanal"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                                lineNumber: 135,
+                                                lineNumber: 168,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -397,19 +365,19 @@ function CreateRetrospectivePage() {
                                                 children: "Mensual"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                                lineNumber: 136,
+                                                lineNumber: 169,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 133,
+                                        lineNumber: 163,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 131,
+                                lineNumber: 161,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -418,12 +386,12 @@ function CreateRetrospectivePage() {
                                         children: "Número de ocurrencias:"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 140,
+                                        lineNumber: 173,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 140,
+                                        lineNumber: 173,
                                         columnNumber: 52
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -435,35 +403,35 @@ function CreateRetrospectivePage() {
                                         required: true
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                        lineNumber: 141,
+                                        lineNumber: 174,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                                lineNumber: 139,
+                                lineNumber: 172,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                         type: "submit",
-                        children: mode === 'create' ? 'Crear Retrospectiva' : 'Programar'
+                        children: mode === 'create' ? 'Crear' : 'Programar'
                     }, void 0, false, {
                         fileName: "[project]/src/app/create-retrospective/page.tsx",
-                        lineNumber: 153,
+                        lineNumber: 186,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/create-retrospective/page.tsx",
-                lineNumber: 82,
+                lineNumber: 118,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/create-retrospective/page.tsx",
-        lineNumber: 70,
+        lineNumber: 107,
         columnNumber: 5
     }, this);
 }

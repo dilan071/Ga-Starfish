@@ -7,6 +7,7 @@
   "/login/page": "app/login/page.js",
   "/members/page": "app/members/page.js",
   "/page": "app/page.js",
+  "/profile/page": "app/profile/page.js",
   "/register/page": "app/register/page.js",
   "/retrospective-list/page": "app/retrospective-list/page.js",
   "/retrospective-session/page": "app/retrospective-session/page.js",
