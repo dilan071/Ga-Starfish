@@ -1,58 +1,6 @@
-/* reset.css */
-* {
-  box-sizing: border-box;
+/* src/app/globals.css */
+body {
   margin: 0;
-  padding: 0;
-}
-html, body {
-  display: flex;
-  height: 100%;
   font-family: Arial, sans-serif;
-  justify-content: center;
-  align-content: center;
-  background-color: #ecccccfa;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-}
-
-input, select {
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-button {
-  background-color: #ef4444;
-  color: white;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-
-.footer-links {
-  margin-top: 20px;
-  font-size: 14px;
-  text-align: center;
-}
-
-.footer-links a {
-  color: #d32f2f;
-  text-decoration: none;
-  margin-left: 5px;
-}
-
-.li {
- text-decoration: none;
-}
-
-.link {
-  text-decoration: none;
+  background-color: #fafafa;
 }

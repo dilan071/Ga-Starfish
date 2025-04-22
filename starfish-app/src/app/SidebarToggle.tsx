@@ -1,7 +1,5 @@
-// src/app/SidebarToggle.tsx
 'use client';
 import { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
 
@@ -10,90 +8,68 @@ interface CurrentUser {
   role: 'admin' | 'scrum-master' | 'user' | string;
 }
 
-interface Props {
-  children: React.ReactNode;
-  hideOnPaths?: string[];            // <-- nuevo prop
-}
-
-export default function SidebarToggle({
-  children,
-  hideOnPaths = ['/login', '/register', '/error404', '/']
-}: Props) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+export default function SidebarToggle({ children }: { children: React.ReactNode }) {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
-  const [isClient, setIsClient] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
-
 
   useEffect(() => {
-    setIsClient(true);
-    setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true');
-    const su = localStorage.getItem('currentUser');
-    setCurrentUser(su ? JSON.parse(su) : null);
-  }, [pathname]);
+    const logged = localStorage.getItem('isLoggedIn');
+    setIsLoggedIn(logged === 'true');
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+  }, []);
 
-  const toggleSidebar = () => setSidebarOpen(o => !o);
-
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('currentUser');
-    router.push('/login');
-  };
-
-  const handleLinkClick = () => setSidebarOpen(false);
-
-  if (!isClient || hideOnPaths.includes(pathname)) {
-    return <>{children}</>;
-  }
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   return (
-    <div className={styles.wrapper}>
+    <div>
       <header className={styles.header}>
+        <h1 className='hola'>Ga - Starfish</h1>
         <button onClick={toggleSidebar} className={styles.menuToggle}>
-          {sidebarOpen ? 'Cerrar Menú' : 'Abrir Menú'}
+          {sidebarOpen ? 'Ocultar Menú' : 'Mostrar Menú'}
         </button>
+      </header>
+      <div className={styles.container}>
         {sidebarOpen && (
-          <div className={styles.dropdown}>
+          <aside className={styles.sidebar}>
             <nav>
-              <ul className={styles.menuList}>
+              <ul>
                 {!isLoggedIn ? (
                   <>
-                    <li onClick={handleLinkClick}>
-                      <Link href="/register">Registrarse</Link>
-                    </li>
-                    <li onClick={handleLinkClick}>
-                      <Link href="/login">Iniciar Sesión</Link>
-                    </li>
+                    <li><Link href="/register">Registrarse</Link></li>
+                    <li><Link href="/login">Iniciar Sesión</Link></li>
                   </>
                 ) : currentUser?.role === 'admin' ? (
                   <>
-                    <li onClick={handleLinkClick}><Link href="/members">Gestionar Miembros</Link></li>
+                    <li><Link href="/">Home</Link></li>
+                    <li><Link href="/members">Gestionar Miembros</Link></li>
+                    {/* El admin no crea retrospectiva */}
                   </>
                 ) : currentUser?.role === 'scrum-master' ? (
                   <>
-                    <li onClick={handleLinkClick}><Link href="/create-retrospective">Crear Retrospectiva</Link></li>
+                    <li><Link href="/">Home</Link></li>
+                    <li><Link href="/create-retrospective">Crear Retrospectiva</Link></li>
+                    <li><Link href="/select-fsh">Seleccionar FSH</Link></li>
                   </>
                 ) : (
+                  // Usuario normal o invitado aceptado
                   <>
-                    <li onClick={handleLinkClick}><Link href="/dashboard">Página Principal</Link></li>
+                    <li><Link href="/dashboard">Dashboard</Link></li>
+                    <li><Link href="/add-actions">Agregar Acciones</Link></li>
+                    <li><Link href="/vote-actions">Votar Acciones</Link></li>
+                    <li><Link href="/retrospective-session">Ingresar a la Retrospectiva</Link></li>
+                    <li><Link href="/view-questions">Ver Preguntas</Link></li>
                   </>
-                )}
-                {isLoggedIn && (
-                  <li>
-                    <button onClick={handleLogout} className={styles.logoutBtn}>
-                      Cerrar Sesión
-                    </button>
-                  </li>
                 )}
               </ul>
             </nav>
-          </div>
+          </aside>
         )}
-      </header>
-      <main className={styles.main}>{children}</main>
+        <main className={styles.main}>{children}</main>
+      </div>
     </div>
   );
 }
-
