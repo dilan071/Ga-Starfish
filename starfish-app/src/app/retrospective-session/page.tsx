@@ -1,9 +1,6 @@
-// RetrospectiveSessionPage.tsx
 'use client';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import SidebarToggle from '../SidebarToggle';
-import styles from './Retrospective-Session.module.css';
 
 export default function RetrospectiveSessionPage() {
   const [retrospective, setRetrospective] = useState<any>(null);
@@ -12,150 +9,18 @@ export default function RetrospectiveSessionPage() {
   const [showQuestions, setShowQuestions] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
+  const [userVotedAction, setUserVotedAction] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const retrospectiveId = searchParams.get('id');
 
-
+  // Función para obtener avatar de un email
+  const getAvatar = (email: string) => {
+    const all = JSON.parse(localStorage.getItem('users') || '[]');
+    const u = all.find((x: any) => x.email === email);
+    return u?.avatar || '/default-avatar.png';
+  };
 
   // Mapeo de preguntas por FSH
-  
-
-  useEffect(() => {
-    const storedRetrospectives = localStorage.getItem('retrospectives');
-    const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
-    setCurrentUser(user);
-  
-    if (storedRetrospectives) {
-      const retros = JSON.parse(storedRetrospectives);
-      let retroToLoad = null;
-  
-      if (retrospectiveId) {
-        // Busca la retrospectiva por el id proporcionado en la URL
-        retroToLoad = retros.find((retro: any) => retro.id && retro.id === retrospectiveId);
-      } else if (user && user.assignedGroup) {
-        // Busca la retrospectiva abierta más reciente del grupo del usuario
-        const retrospectivesForGroup = retros
-          .filter((retro: any) => 
-            retro.assignedGroup && 
-            typeof retro.assignedGroup === 'string' &&
-            typeof user.assignedGroup === 'string' &&
-            retro.assignedGroup.trim() === user.assignedGroup.trim() &&
-            retro.closed === false // Solo retrospectivas abiertas
-          )
-          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Ordenar por fecha de creación (desc)
-  
-        retroToLoad = retrospectivesForGroup.length > 0 ? retrospectivesForGroup[0] : null;
-      }
-  
-      console.log("Retrospectiva seleccionada:", retroToLoad);
-  
-      if (retroToLoad) {
-        setRetrospective(retroToLoad);
-        setIsAuthorized(true);
-      } else {
-        setRetrospective(null);
-        setIsAuthorized(false);
-      }
-    }
-  }, [retrospectiveId]);
-  
-  
-  useEffect(() => {
-    if (retrospective && currentUser && retrospective.votes) {
-      if (retrospective.votes[currentUser.email]) {
-        setHasVoted(true);
-      }
-    }
-  }, [retrospective, currentUser]);
-
-  const handleAddAction = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (retrospective.closed) {
-      alert('La retrospectiva está cerrada. No se pueden agregar nuevas acciones.');
-      return;
-    }
-    if (!actionText.trim()) return;
-
-    const newAction = {
-      id: Date.now().toString(),
-      text: actionText.trim(),
-      createdBy: currentUser?.email || 'desconocido',
-      voteCount: 0
-    };
-
-    const updatedRetro = {
-      ...retrospective,
-      actions: retrospective.actions ? [...retrospective.actions, newAction] : [newAction],
-      votes: retrospective.votes || {}
-    };
-
-    // Actualiza la retrospectiva en localStorage
-    const storedRetrospectives = localStorage.getItem('retrospectives');
-    if (storedRetrospectives) {
-      const retros = JSON.parse(storedRetrospectives);
-      const updatedRetros = retros.map((retro: any) => {
-        if (
-          retro.assignedGroup &&
-          currentUser &&
-          retro.assignedGroup.trim() === currentUser.assignedGroup.trim() &&
-          retro.createdAt === retrospective.createdAt
-        ) {
-          return updatedRetro;
-        }
-        return retro;
-      });
-      localStorage.setItem('retrospectives', JSON.stringify(updatedRetros));
-    }
-    setRetrospective(updatedRetro);
-    setActionText('');
-  };
-
-  const handleVote = (actionId: string) => {
-    if (retrospective.closed) {
-      alert('La retrospectiva está cerrada. No se pueden emitir votos.');
-      return;
-    }
-    if (!currentUser) return;
-    if (retrospective.votes && retrospective.votes[currentUser.email]) {
-      alert('Ya has votado');
-      return;
-    }
-    const updatedActions = retrospective.actions.map((action: any) => {
-      if (action.id === actionId) {
-        return { ...action, voteCount: action.voteCount + 1 };
-      }
-      return action;
-    });
-    const updatedVotes = { ...retrospective.votes, [currentUser.email]: actionId };
-
-    const updatedRetro = {
-      ...retrospective,
-      actions: updatedActions,
-      votes: updatedVotes
-    };
-
-    // Actualiza la retrospectiva en el array y en localStorage
-    const storedRetrospectives = localStorage.getItem('retrospectives');
-    if (storedRetrospectives) {
-      const retros = JSON.parse(storedRetrospectives);
-      const updatedRetros = retros.map((retro: any) => {
-        if (
-          retro.assignedGroup &&
-          currentUser &&
-          retro.assignedGroup.trim() === currentUser.assignedGroup.trim() &&
-          retro.createdAt === retrospective.createdAt
-        ) {
-          return updatedRetro;
-        }
-        return retro;
-      });
-      localStorage.setItem('retrospectives', JSON.stringify(updatedRetros));
-    }
-    setRetrospective(updatedRetro);
-    setHasVoted(true);
-  };
-
-  // Ejemplo de mapeo de preguntas (puedes ajustarlo según tus necesidades)
   const questionsMapping: { [key: string]: string[] } = {
     'Comunicación': [
       '¿En qué momentos del sprint la comunicación fue efectiva y cómo podemos replicarla en el futuro?',
@@ -211,13 +76,117 @@ export default function RetrospectiveSessionPage() {
     ],
   };
 
+
+  // Cargar retrospectiva y usuario desde localStorage
+  useEffect(() => {
+    const storedRetrospectives = localStorage.getItem('retrospectives');
+    const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    setCurrentUser(user);
+  
+    if (storedRetrospectives) {
+      const retros = JSON.parse(storedRetrospectives);
+      let retroToLoad = null;
+  
+      if (retrospectiveId) {
+        retroToLoad = retros.find((retro: any) => retro.id && retro.id === retrospectiveId);
+      } else if (user && user.assignedGroup) {
+        const retrospectivesForGroup = retros.filter((retro: any) => 
+          retro.assignedGroup && retro.assignedGroup.trim() === user.assignedGroup.trim() && retro.closed === false
+        );
+        retrospectivesForGroup.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        retroToLoad = retrospectivesForGroup.length > 0 ? retrospectivesForGroup[0] : null;
+      }
+  
+      if (retroToLoad) {
+        setRetrospective(retroToLoad);
+        setIsAuthorized(true);
+      } else {
+        setRetrospective(null);
+        setIsAuthorized(false);
+      }
+    }
+  }, [retrospectiveId]);
+
+  useEffect(() => {
+    if (retrospective && currentUser && retrospective.votes) {
+      const voteId = retrospective.votes[currentUser.email];
+      if (voteId) {
+        setHasVoted(true);
+        setUserVotedAction(voteId);
+      }
+    }
+  }, [retrospective, currentUser]);
+
+  // Función para otorgar puntos
+  const addPoint = (type: 'vote' | 'comment') => {
+    if (!currentUser) return;
+    const record = JSON.parse(localStorage.getItem('points') || '[]');
+    const entry = {
+      email: currentUser.email,
+      type,
+      date: new Date().toISOString(),
+      points: type === 'vote' ? 1 : 2
+    };
+    localStorage.setItem('points', JSON.stringify([...record, entry]));
+  };
+
+  // Agregar nueva acción (comentario)
+  const handleAddAction = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!actionText.trim()) return;
+
+    const newAction = {
+      id: Date.now().toString(),
+      text: actionText.trim(),
+      createdBy: currentUser?.email || 'desconocido',
+      voteCount: 0
+    };
+
+    const updated = {
+      ...retrospective,
+      actions: retrospective.actions ? [...retrospective.actions, newAction] : [newAction],
+      votes: retrospective.votes || {}
+    };
+
+    localStorage.setItem('retrospective', JSON.stringify(updated));
+    setRetrospective(updated);
+    setActionText('');
+    addPoint('comment');
+  };
+
+  // Votar o cambiar voto
+  const handleVote = (actionId: string) => {
+    if (retrospective.closed) {
+      alert('La retrospectiva está cerrada. No se pueden emitir votos.');
+      return;
+    }
+    if (!currentUser) return;
+
+    const prevVote = retrospective.votes?.[currentUser.email];
+    const updatedActions = retrospective.actions.map((a: any) => {
+      if (a.id === actionId) return { ...a, voteCount: a.voteCount + 1 };
+      if (a.id === prevVote) return { ...a, voteCount: Math.max(0, a.voteCount - 1) };
+      return a;
+    });
+
+    const updatedVotes = { ...retrospective.votes, [currentUser.email]: actionId };
+    const updated = { ...retrospective, actions: updatedActions, votes: updatedVotes };
+
+    localStorage.setItem('retrospective', JSON.stringify(updated));
+    setRetrospective(updated);
+    setHasVoted(true);
+    setUserVotedAction(actionId);
+    addPoint('vote');
+  };
+
+  // Toggle preguntas FSH
   const toggleQuestions = () => {
     setShowQuestions(!showQuestions);
   };
 
+  // Cerrar retrospectiva (solo Scrum Master)
   const handleCloseRetrospective = () => {
     if (!currentUser) return;
-    // Solo el Scrum Master (creador) puede cerrar la retrospectiva
     if (currentUser.email !== retrospective.createdBy) {
       alert('No tienes permiso para cerrar esta retrospectiva.');
       return;
@@ -227,7 +196,6 @@ export default function RetrospectiveSessionPage() {
       closed: true
     };
 
-    // Actualiza la retrospectiva en el array y en localStorage
     const storedRetrospectives = localStorage.getItem('retrospectives');
     if (storedRetrospectives) {
       const retros = JSON.parse(storedRetrospectives);
@@ -251,70 +219,80 @@ export default function RetrospectiveSessionPage() {
   if (!retrospective) return <div>No hay retrospectiva activa.</div>;
   if (!isAuthorized) return <div>No tienes permiso para ver esta retrospectiva.</div>;
 
-
   return (
-    <main className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.logoContainer}>
-          <img
-            src="/img/starfish.png"
-            alt="Ga-Starfish Logo"
-            className={styles.logoImage}
-          />
-          <span className={styles.projectName}>Ga-Starfish</span>
-        </div>
-        <h1 className={styles.pageTitle}>
-          Retrospectiva
-        </h1>
-        <div className={styles.menuWrapper}>
-          <SidebarToggle> </SidebarToggle>
-        </div>
-      </header>
+    <div style={{ padding: '1rem' }}>
+      <h2>Retrospectiva: {retrospective.title}</h2>
+      <p>{retrospective.description}</p>
+      {retrospective.fsh && (
+        <p>
+          FSH: <span style={{ color: 'blue' }}>{retrospective.fsh}</span>
+        </p>
+      )}
 
-      <section className={styles.sessionSection}>
-        <div className={styles.infoGroup}>
-          <p>
-            <strong>Retrospectiva:</strong> {retrospective.title}
-          </p>
-          <p>
-            <strong>Grupo:</strong> {retrospective.assignedGroup}
-          </p>
-          {retrospective.fsh && (
-            <p>
-              <strong>FSH:</strong> {retrospective.fsh}
-            </p>
-          )}
-        </div>
+      <hr />
+      <h3>Agregar Acción</h3>
+      <form onSubmit={handleAddAction}>
+        <input
+          type="text"
+          placeholder="Escribe tu acción"
+          value={actionText}
+          onChange={(e) => setActionText(e.target.value)}
+          disabled={retrospective.closed}
+        />
+        <button type="submit" disabled={retrospective.closed}>
+          Agregar Acción
+        </button>
+      </form>
 
-        {currentUser.email === retrospective.createdBy &&
-          !retrospective.closed && (
-            <button
-              onClick={handleCloseRetrospective}
-              className={styles.enterBtn}
-            >
-              Cerrar Retrospectiva
-            </button>
-          )}
+      <hr />
+      <h3>Acciones Agregadas</h3>
+      {retrospective.actions?.length ? (
+        <ul>
+          {retrospective.actions.map((action: any) => (
+            <li key={action.id} style={{ display: 'flex', alignItems: 'center', margin: '0.5rem 0' }}>
+              <img
+                src={getAvatar(action.createdBy)}
+                alt="avatar"
+                style={{ width: '32px', height: '32px', borderRadius: '50%', marginRight: '0.5rem' }}
+              />
+              <div style={{ flex: 1 }}>
+                <strong>{action.createdBy}</strong>: {action.text}
+              </div>
+              <div style={{ marginLeft: '1rem' }}>
+                {action.voteCount} votos
+                <button
+                  onClick={() => handleVote(action.id)}
+                  disabled={hasVoted}
+                  style={{ marginLeft: '0.5rem' }}
+                >
+                  {userVotedAction === action.id ? 'Has votado' : 'Votar'}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No se han agregado acciones aún.</p>
+      )}
 
-        <div className={styles.infoGroup}>
-          <label>
-            <strong>Técnica Starfish:</strong>
-          </label>
+      <hr />
+      <button onClick={toggleQuestions}>
+        {showQuestions ? 'Ocultar Preguntas' : 'Ver Preguntas'}
+      </button>
+      {showQuestions && retrospective.fsh && (
+        <div>
+          <h3>Preguntas para {retrospective.fsh}</h3>
+          <ul>
+            {(questionsMapping[retrospective.fsh] || []).map((q, i) => (
+              <li key={i}>{q}</li>
+            ))}
+          </ul>
         </div>
+      )}
 
-        <div className={styles.buttonGroup}>
-          <button>Hacer más</button>
-          <button>Hacer menos</button>
-          <button>Continuar haciendo</button>
-          <button>Dejar de hacer</button>
-          <button>Comenzar a hacer</button>
-        </div>
-          
-        <div className="hide">
-          {/* Aquí permanece el formulario de agregar acción pero oculto */}
-        </div>
-      </section>
-    </main>
+      {currentUser?.email === retrospective?.createdBy && !retrospective?.closed && (
+        <button onClick={handleCloseRetrospective}>Cerrar Retrospectiva</button>
+      )}
+    </div>
   );
 }
-

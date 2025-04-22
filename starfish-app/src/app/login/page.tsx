@@ -1,9 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import styles from './Login.module.css';
-
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -38,56 +35,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className={styles.loginContainer}>
-      <div className={styles.loginCard}>
-        <Image
-          src="/img/starfish.png"
-          alt="Starfish Logo"
-          width={140}
-          height={140}
-          className={styles.logo}
-        />
-
-        <h1 className={styles.mainTitle}>Ga‑Starfish</h1>
-        <h2 className={styles.loginTitle}>Iniciar sesión</h2>
-
-        <form className={styles.loginForm} onSubmit={handleLogin}>
-          <input
+    <div style={{ padding: '1rem' }}>
+      <h2>Iniciar Sesión</h2>
+      <form onSubmit={handleLogin}>
+        <div>
+          <label>Email:</label><br />
+          <input 
             type="email"
             value={email}
-            placeholder="Correo electrónico"
-            className={styles.inputField}
             onChange={e => setEmail(e.target.value)}
             required 
           />
-          <input
+        </div>
+        <div>
+          <label>Contraseña:</label><br />
+          <input 
             type="password"
-            placeholder="Contraseña"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className={styles.inputField}
-            required
+            required 
           />
-          <a href="#" className={styles.forgotLink}>¿Olvidaste tu contraseña?</a>
-
-          <button
-            type="submit"
-            className={styles.btnLogin}
-          >
-            Iniciar sesión
-          </button>
-        </form>
-
-        <p className={styles.signupText}>
-          ¿No tienes una cuenta?
-          <span
-            className={styles.signupLink}
-            onClick={() => router.push('/register')}
-          >
-            Regístrate
-          </span>
-        </p>
-      </div>
+        </div>
+        <button type="submit">Iniciar Sesión</button>
+      </form>
     </div>
   );
 }
