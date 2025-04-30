@@ -68,7 +68,7 @@ export default function LoginPage() {
             className={styles.inputField}
             required
           />
-          <a href="#" className={styles.forgotLink}>¿Olvidaste tu contraseña?</a>
+          <a href="/recover" className={styles.forgotLink}>¿Olvidaste tu contraseña?</a>
 
           <button
             type="submit"
