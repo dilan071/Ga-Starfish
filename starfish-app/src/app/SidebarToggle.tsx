@@ -17,7 +17,7 @@ interface Props {
 
 export default function SidebarToggle({
   children,
-  hideOnPaths = ['/login', '/register', '/error404', '/']
+  hideOnPaths = ['/login', '/register', '/error404',]
 }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -44,10 +44,16 @@ export default function SidebarToggle({
 
   const handleLinkClick = () => setSidebarOpen(false);
 
-  if (!isClient || hideOnPaths.includes(pathname)) {
+  const shouldHide = hideOnPaths.some(path => 
+    // si path === '/', sólo ocultar EXACTAMENTE en '/'
+    (path === pathname) ||
+    // si path NO es '/', ocultar en rutas que comiencen con ese prefijo
+    (path !== '/' && pathname.startsWith(path))
+  );
+  
+  if (!isClient || shouldHide) {
     return <>{children}</>;
   }
-
   return (
     <div className={styles.wrapper}>
       <header className={styles.header}>
