@@ -75,6 +75,8 @@
     background-color: #fff;
     min-width: 1040;
     min-height: 800;
+    overflow-y: auto;
+    max-height: calc(100vh - 160px)
   }
   
   .infoGroup {
@@ -89,7 +91,8 @@
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.2s;
-    margin-bottom: 1rem;
+    margin-bottom: 1.3rem;
+    
   }
   .enterBtn:hover {
     background-color: #dc2626;
@@ -115,6 +118,7 @@
   }
   .buttonGroup button:hover {
     background-color: #dc2626;
+    justify-content: center;
   }
   
   /* ocultar el antiguo formulario de acción */
@@ -130,5 +134,130 @@
   
   .infoGroup li {
     margin-bottom: 0.5rem;
+  }
+  
+  .planSection {
+    margin-top: 2rem;
+    border-top: 1px solid #eee;
+    padding-top: 1.5rem;
+    align-items: center;
+  }
+  
+  .planForm {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+    justify-content: flex-start;
+    
+  }
+  
+  .planForm label {
+    flex: 1 1 calc(33.333% - 1rem);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .addPlanBtn {
+    flex: 1 1 100%;
+    padding: var(--control-height) 1rem;
+    background-color: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .planList ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+  }
+  
+  .questionToggleBtn {
+    margin-top: 2rem;
+    padding: 0.5rem 1rem;
+    background-color: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .questionsList {
+    margin-top: 1rem;
+    max-height: 200px;        /* ajusta a la altura que quieras para mostrar */
+    overflow-y: auto;         /* scroll interno */
+    padding-right: 0.5rem;    /* espacio para la barra */
+    background-color: #f9fafb;/* opcional: fondo para destacarlo */
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+  }
+  
+  .questionsList ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin: 0;
+  }
+  
+  
+  .planForm {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    
+  }
+  
+  .planForm label {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  
+  .addPlanBtn {
+    padding: var(--control-height) 1rem;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    flex: 1;
+  }
+  
+  .planTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  
+  .planTable th, .planTable td {
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    text-align: left;
+  }
+  
+  .planTable th {
+    background-color: #f9f9f9;
+  }
+  
+  .actionBtn {
+    margin: 0.5rem 0.25rem;
+    padding: 0.5rem 1rem;
+    background-color: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    line-height: var(--control-height);
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    min-width: 460px;
+  }
+  
+  .actionBtn:hover {
+    background-color: #dc2626;
   }
   
