@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import styles from './Register.module.css';
+import Swal from 'sweetalert2';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -18,7 +19,13 @@ export default function RegisterPage() {
 
     let users = JSON.parse(localStorage.getItem('users') || '[]');
     if (users.find((u: any) => u.email === trimmedEmail)) {
-      alert('El usuario ya existe');
+      Swal.fire({
+        text: "El email ingresado ya existe en la plataforma.",
+        icon: "error",
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Cerrar',
+        scrollbarPadding: false
+      });
       return;
     }
 
@@ -32,7 +39,13 @@ export default function RegisterPage() {
 
     users.push(newUser);
     localStorage.setItem('users', JSON.stringify(users));
-    alert('Registro exitoso');
+    Swal.fire({
+      text: "Registro exitoso.",
+      icon: "success",
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Cerrar',
+      scrollbarPadding: false
+    });
     router.push('/login');
   };
     return (
