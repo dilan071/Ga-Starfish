@@ -2,6 +2,7 @@
 import { useState, useEffect, JSX, Children } from 'react';
 import styles from './Members.module.css';
 import SidebarToggle from '../SidebarToggle';
+import Swal from 'sweetalert2';
 
 // Define a User type for state
 type User = {
@@ -34,7 +35,14 @@ export default function MembersPage(): JSX.Element {
       u.email === email ? { ...u, groupRole: newRole } : u
     );
     localStorage.setItem('users', JSON.stringify(all));
-    alert(`Rol asignado a ${email}: ${newRole}`);
+    Swal.fire({
+      text: `Rol asignado a ${email}: ${newRole}.`,
+      icon: "success",
+      confirmButtonColor: '#ef4444',
+      iconColor: '#ef4444',
+      confirmButtonText: 'Cerrar',
+      scrollbarPadding: false 
+    });
     loadUsers();
   };
 
@@ -53,7 +61,14 @@ export default function MembersPage(): JSX.Element {
     const raw = localStorage.getItem('users') || '[]';
     const all = (JSON.parse(raw) as User[]).filter(u => u.email !== email);
     localStorage.setItem('users', JSON.stringify(all));
-    alert(`Usuario ${email} eliminado.`);
+    Swal.fire({
+      text: `Usuario ${email} eliminado correctamente.`,
+      icon: "success",
+      confirmButtonColor: '#ef4444',
+      iconColor: '#ef4444',
+      confirmButtonText: 'Cerrar',
+      scrollbarPadding: false 
+    });
     // También lo quitamos de la selección si estaba
     setSelectedUsers(prev => prev.filter(u => u.email !== email));
     loadUsers();
@@ -62,7 +77,14 @@ export default function MembersPage(): JSX.Element {
   // Crea y asigna un nuevo grupo
   const handleCreateGroup = (): void => {
     if (!groupName.trim()) {
-      alert('Debes ingresar un nombre para el grupo');
+      Swal.fire({
+        text: `Debes ingresar un nombre para el grupo.`,
+        icon: "error",
+        confirmButtonColor: '#ef4444',
+        iconColor: '#ef4444',
+        confirmButtonText: 'Cerrar',
+        scrollbarPadding: false 
+      });
       return;
     }
     const raw = localStorage.getItem('users') || '[]';
@@ -70,13 +92,27 @@ export default function MembersPage(): JSX.Element {
     const groupMembers = all.filter(u => u.assignedGroup === groupName.trim());
     // Validaciones...
     if (groupMembers.length + selectedUsers.length > 5) {
-      alert(`El grupo "${groupName}" no puede tener más de 5 integrantes.`);
+      Swal.fire({
+        text: `El grupo "${groupName}" no puede tener más de 5 integrantes.`,
+        icon: "error",
+        confirmButtonColor: '#ef4444',
+        iconColor: '#ef4444',
+        confirmButtonText: 'Cerrar',
+        scrollbarPadding: false 
+      });
       return;
     }
     const currentSM = groupMembers.filter(u => u.groupRole === 'scrum-master').length;
     const newSM = selectedUsers.filter(u => u.groupRole === 'scrum-master').length;
     if (currentSM + newSM > 1) {
-      alert('Solo se permite un scrum-master por grupo');
+      Swal.fire({
+        text: "Sólo se permite un Scrum Master por grupo.",
+        icon: "error",
+        confirmButtonColor: '#ef4444',
+        iconColor: '#ef4444',
+        confirmButtonText: 'Cerrar',
+        scrollbarPadding: false 
+      });
       return;
     }
     const updated = all.map(u =>
@@ -85,7 +121,14 @@ export default function MembersPage(): JSX.Element {
         : u
     );
     localStorage.setItem('users', JSON.stringify(updated));
-    alert(`Grupo "${groupName}" creado y asignado`);
+         Swal.fire({
+            text: `Grupo "${groupName}" creado y asignado.`,
+            icon: "success",
+            confirmButtonColor: '#ef4444',
+            iconColor: '#ef4444',
+            confirmButtonText: 'Cerrar',
+            scrollbarPadding: false 
+          });
     setGroupName('');
     setSelectedUsers([]);
     loadUsers();
@@ -105,7 +148,7 @@ export default function MembersPage(): JSX.Element {
           <SidebarToggle>­</SidebarToggle>
         </div>
       </header>
-
+    
       <section className={styles.usersList}>
         <h2>Usuarios Registrados</h2>
         {users.length === 0 ? (
@@ -160,11 +203,22 @@ export default function MembersPage(): JSX.Element {
         <div className={styles.selectedUsers}>
           <h3>Usuarios seleccionados:</h3>
           {selectedUsers.length > 0 ? (
-            <ul>
-              {selectedUsers.map(u => (
-                <li key={u.email}>{u.email} – {u.groupRole || 'Sin rol'}</li>
-              ))}
-            </ul>
+            <table className={styles.selectedTable}>
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Rol</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedUsers.map(u => (
+                  <tr key={u.email}>
+                    <td>{u.email}</td>
+                    <td>{u.groupRole || 'Sin rol'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           ) : (
             <p>Ninguno</p>
           )}
@@ -173,3 +227,4 @@ export default function MembersPage(): JSX.Element {
     </main>
   );
 }
+
