@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import SidebarToggle from '../SidebarToggle';
 import styles from './Create-Retrospective.module.css';
+import Swal from 'sweetalert2';
 
 export default function CreateRetrospectivePage() {
   const [title, setTitle] = useState('');
@@ -14,7 +15,14 @@ export default function CreateRetrospectivePage() {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fsh) {
-      alert('Debes seleccionar un FSH para analizar');
+      Swal.fire({
+        text: "Debes seleccionar un FSH para finalizar.",
+        icon: "error",
+        confirmButtonColor: '#ef4444',
+        iconColor: '#ef4444',
+        confirmButtonText: 'Cerrar',
+        scrollbarPadding: false 
+      });
       return;
     }
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
@@ -37,7 +45,13 @@ export default function CreateRetrospectivePage() {
     const retros = stored ? JSON.parse(stored) : [];
     retros.push(newRetro);
     localStorage.setItem('retrospectives', JSON.stringify(retros));
-    alert('Retrospectiva creada exitosamente');
+    Swal.fire({
+      text: "Se ha creado la retrospectiva exitosamente.",
+      icon: "success",
+      confirmButtonColor: '#ef4444',
+      iconColor: '#ef4444',
+      confirmButtonText: 'Cerrar'
+    });
     router.push('/retrospective-list');
   };
 
