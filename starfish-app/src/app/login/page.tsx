@@ -28,7 +28,6 @@ export default function LoginPage() {
     if (user.role === 'admin') {
       router.push('/members');
     } else {
-      // Si el usuario normal aún no tiene grupo asignado, lo redirige a /invitation (lista de espera)
       if (!user.assignedGroup) {
         router.push('/invitation');
       } else {
