@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import SidebarToggle from '../SidebarToggle';
 import styles from './Retrospective-List.module.css';
+import Swal from 'sweetalert2';
 
 export default function RetrospectiveListPage() {
   const [retrospectives, setRetrospectives] = useState<any[]>([]);
@@ -28,7 +29,14 @@ export default function RetrospectiveListPage() {
     const retro = retrospectives.find(r => r.id === retroId);
     if (!retro) return;
     if (currentUser.email !== retro.createdBy) {
-      alert('No tienes permiso para cerrar esta retrospectiva.');
+      Swal.fire({
+        text: "No tienes permiso para cerrar ésta retrospectiva.",
+        icon: "error",
+        confirmButtonColor: '#ef4444',
+        iconColor: '#ef4444',
+        confirmButtonText: 'Cerrar',
+        scrollbarPadding: false 
+      });;
       return;
     }
     const updated = { ...retro, closed: true };
@@ -36,7 +44,14 @@ export default function RetrospectiveListPage() {
     const updatedAll = stored.map((r: any) => (r.id === retroId ? updated : r));
     localStorage.setItem('retrospectives', JSON.stringify(updatedAll));
     setRetrospectives(prev => prev.map(r => (r.id === retroId ? updated : r)));
-    alert('Retrospectiva cerrada.');
+                Swal.fire({
+                  text: "Retrospectiva cerrada exitosamente.",
+                  icon: "success",
+                  confirmButtonColor: '#ef4444',
+                  iconColor: '#ef4444',
+                  confirmButtonText: 'Cerrar',
+                  scrollbarPadding: false 
+                });;
   };
 
   if (!currentUser) return <div>Cargando información...</div>;
