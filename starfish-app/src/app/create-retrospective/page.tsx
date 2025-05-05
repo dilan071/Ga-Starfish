@@ -1,6 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import SidebarToggle from '../SidebarToggle';
+import styles from './Create-retrospective.module.css';
+import Swal from 'sweetalert2';
 import { addDays, addWeeks, addMonths, formatISO } from 'date-fns';
 
 type Occurrence = {
@@ -27,24 +30,28 @@ export default function CreateRetrospectivePage() {
   const [count, setCount] = useState(1);
   const router = useRouter();
 
-  // Datos de usuario actual
   const currentUser = typeof window !== 'undefined'
     ? JSON.parse(localStorage.getItem('currentUser') || 'null')
     : null;
   const assignedGroup = currentUser?.assignedGroup || '';
   const createdBy = currentUser?.email || 'unknown';
 
-  // Guardar en array principal
   const saveToRetrospectives = (items: Occurrence[]) => {
     const all = JSON.parse(localStorage.getItem('retrospectives') || '[]');
     localStorage.setItem('retrospectives', JSON.stringify([...all, ...items]));
   };
 
-  // Crear retrospectiva inmediata
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fsh) {
-      alert('Debes seleccionar un FSH');
+      Swal.fire({
+        text: "Debes seleccionar un FSH para finalizar.",
+        icon: "error",
+        confirmButtonColor: '#ef4444',
+        iconColor: '#ef4444',
+        confirmButtonText: 'Cerrar',
+        scrollbarPadding: false 
+      });
       return;
     }
     const id = Date.now().toString();
@@ -60,20 +67,27 @@ export default function CreateRetrospectivePage() {
       votes: {},
       closed: false
     };
-    // Sesión activa
-    localStorage.setItem('retrospective', JSON.stringify(retro));
-    // Agregar a lista
     saveToRetrospectives([retro]);
 
-    alert('Retrospectiva creada exitosamente');
-    router.push('/retrospective-session');
+    Swal.fire({
+      text: "Retrospectiva creada exitosamente.",
+      icon: "success",
+      confirmButtonColor: '#ef4444',
+      iconColor: '#ef4444',
+      confirmButtonText: 'Cerrar'
+    }).then(() => router.push('/retrospective-list'));
   };
 
-  // Programar retrospectivas recurrentes
   const handleSchedule = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !fsh || !start) {
-      alert('Completa título, FSH y fecha de inicio');
+      Swal.fire({
+        text: "Completa título, FSH y fecha de inicio.",
+        icon: "warning",
+        confirmButtonColor: '#ef4444',
+        iconColor: '#ef4444',
+        confirmButtonText: 'Cerrar'
+      });
       return;
     }
     const occurrences: Occurrence[] = [];
@@ -99,43 +113,68 @@ export default function CreateRetrospectivePage() {
     }
 
     saveToRetrospectives(occurrences);
-    alert('Retrospectivas programadas exitosamente');
-    router.push('/dashboard');
+
+    Swal.fire({
+      text: "Retrospectivas programadas exitosamente.",
+      icon: "success",
+      confirmButtonColor: '#ef4444',
+      iconColor: '#ef4444',
+      confirmButtonText: 'Cerrar'
+    }).then(() => router.push('/dashboard'));
   };
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>{mode === 'create' ? 'Crear Retrospectiva' : 'Programar Retrospectivas'}</h2>
-      <div style={{ marginBottom: '1rem' }}>
-        <button onClick={() => setMode('create')} disabled={mode === 'create'}>
-          Crear única
-        </button>{' '}
-        <button onClick={() => setMode('schedule')} disabled={mode === 'schedule'}>
-          Programar recurrente
-        </button>
-      </div>
+    <main className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.logoContainer}>
+          <img src="/img/starfish.png" alt="Ga-Starfish Logo" className={styles.logoImage} />
+          <span className={styles.projectName}>Ga-Starfish</span>
+        </div>
+        <h1 className={styles.pageTitle}>Crear Retrospectiva</h1>
+        <div className={styles.menuWrapper}>
+          <SidebarToggle children={undefined} /> {}
+        </div>
+      </header>
 
-      <form onSubmit={mode === 'create' ? handleCreate : handleSchedule}>
-        <div>
-          <label>Título:</label><br />
-          <input
-            type="text"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            required
-          />
+      <section className={styles.formSection}>
+        <div className={styles.modeSwitch}>
+          <button type="button" onClick={() => setMode('create')} disabled={mode === 'create'}>Crear única</button>
+          <button type="button" onClick={() => setMode('schedule')} disabled={mode === 'schedule'}>Programar</button>
         </div>
-        <div>
-          <label>Descripción:</label><br />
-          <textarea
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Seleccionar FSH:</label><br />
-          <select value={fsh} onChange={e => setFsh(e.target.value)} required>
+
+        <form onSubmit={mode === 'create' ? handleCreate : handleSchedule}>
+          <div className={styles.formGroup}>
+            <label htmlFor="title"><strong>Título:</strong></label>
+            <input
+              id="title"
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              required
+              className={styles.input}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="description"><strong>Descripción</strong></label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              required
+              className={styles.textarea}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="fsh"><strong>Seleccionar FSH:</strong></label>
+            <select
+              id="fsh"
+              value={fsh}
+              onChange={e => setFsh(e.target.value)}
+              required
+              className={styles.select}
+            >
               <option value="">Ninguno</option>
               <option value="Comunicación">Comunicación</option>
               <option value="Compromiso">Compromiso</option>
@@ -151,48 +190,50 @@ export default function CreateRetrospectivePage() {
               <option value="Habilidades y experiencia en el proceso de desarrollo de software">Habilidades y experiencia en el proceso de desarrollo de software</option>
               <option value="Habilidades y experiencia en la gestión de proyectos de desarrollo de software">Habilidades y experiencia en la gestión de proyectos de desarrollo de software</option>
             </select>
-        </div>
+          </div>
 
-        {mode === 'schedule' && (
-          <>
-            <div>
-              <label>Fecha y hora inicio:</label><br />
-              <input
-                type="datetime-local"
-                value={start}
-                onChange={e => setStart(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label>Periodicidad:</label><br />
-              <select
-                value={recurrence}
-                onChange={e => setRecurrence(e.target.value as any)}
-              >
-                <option value="daily">Diaria</option>
-                <option value="weekly">Semanal</option>
-                <option value="monthly">Mensual</option>
-              </select>
-            </div>
-            <div>
-              <label>Número de ocurrencias:</label><br />
-              <input
-                type="number"
-                min={1}
-                max={12}
-                value={count}
-                onChange={e => setCount(parseInt(e.target.value) || 1)}
-                required
-              />
-            </div>
-          </>
-        )}
+          {mode === 'schedule' && (
+            <>
+              <div className={styles.formGroup}>
+                <label><strong>Fecha de inicio:</strong></label>
+                <input
+                  type="date"
+                  value={start}
+                  onChange={e => setStart(e.target.value)}
+                  required
+                  className={styles.input}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label><strong>Frecuencia:</strong></label>
+                <select
+                  value={recurrence}
+                  onChange={e => setRecurrence(e.target.value as 'daily' | 'weekly' | 'monthly')}
+                  className={styles.select}
+                >
+                  <option value="daily">Diaria</option>
+                  <option value="weekly">Semanal</option>
+                  <option value="monthly">Mensual</option>
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label><strong>Repeticiones:</strong></label>
+                <input
+                  type="number"
+                  min={1}
+                  value={count}
+                  onChange={e => setCount(Number(e.target.value))}
+                  className={styles.input}
+                />
+              </div>
+            </>
+          )}
 
-        <button type="submit">
-          {mode === 'create' ? 'Crear' : 'Programar'}
-        </button>
-      </form>
-    </div>
+          <button type="submit" className={styles.button}>
+            {mode === 'create' ? 'Crear Retrospectiva' : 'Programar Retrospectivas'}
+          </button>
+        </form>
+      </section>
+    </main>
   );
 }

@@ -1,18 +1,16 @@
 // src/app/layout.tsx
 import './globals.css';
-import styles from './page.module.css';
 import SidebarToggle from './SidebarToggle';
-
-export const metadata = {
-  title: 'Starfish',
-  description: 'Aplicación de retrospectivas',
-};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
       <body>
-        <SidebarToggle>{children}</SidebarToggle>
+        <SidebarToggle hideOnPaths={['/login','/register','/error404','/'
+          ,'/members', '/dashboard', '/create-retrospective', '/retrospective-list'
+          , '/retrospective','/less-of/','/more-of/','/keep-doing/','/start-doing/','/stop-doing/','/recover']}>
+          {children}
+        </SidebarToggle>
       </body>
     </html>
   );

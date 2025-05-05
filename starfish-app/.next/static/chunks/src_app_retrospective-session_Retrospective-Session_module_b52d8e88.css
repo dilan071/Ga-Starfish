@@ -1,0 +1,262 @@
+/* [project]/src/app/retrospective-session/Retrospective-Session.module.css [app-client] (css) */
+:root {
+  --control-height: 2.5rem;
+}
+
+.Retrospective-Session-module__vzd9Ba__container {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.Retrospective-Session-module__vzd9Ba__header {
+  top: 60px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px #0000000d;
+  min-width: 1040px;
+}
+
+.Retrospective-Session-module__vzd9Ba__logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.Retrospective-Session-module__vzd9Ba__logoImage {
+  width: 60px;
+  height: auto;
+}
+
+.Retrospective-Session-module__vzd9Ba__projectName {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #e53e3e;
+}
+
+.Retrospective-Session-module__vzd9Ba__pageTitle {
+  flex: 1;
+  text-align: center;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.Retrospective-Session-module__vzd9Ba__menuWrapper {
+  flex: none;
+}
+
+.Retrospective-Session-module__vzd9Ba__menuButton {
+  padding: .5rem 1rem;
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+
+.Retrospective-Session-module__vzd9Ba__menuButton:hover {
+  background-color: #dc2626;
+}
+
+.Retrospective-Session-module__vzd9Ba__sessionSection {
+  background: url("/path/to/star-background.png") center / contain no-repeat;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0000001a;
+  position: relative;
+  background-color: #fff;
+  min-width: 1040px;
+  min-height: 800px;
+  overflow-y: auto;
+  max-height: calc(100vh - 160px);
+}
+
+.Retrospective-Session-module__vzd9Ba__infoGroup {
+  margin-bottom: 1rem;
+}
+
+.Retrospective-Session-module__vzd9Ba__enterBtn {
+  padding: .5rem 1rem;
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color .2s;
+  margin-bottom: 1.3rem;
+}
+
+.Retrospective-Session-module__vzd9Ba__enterBtn:hover {
+  background-color: #dc2626;
+}
+
+.Retrospective-Session-module__vzd9Ba__buttonGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1rem;
+}
+
+.Retrospective-Session-module__vzd9Ba__buttonGroup button {
+  flex: calc(50% - .75rem);
+  height: var(--control-height);
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+
+.Retrospective-Session-module__vzd9Ba__buttonGroup button:hover {
+  background-color: #dc2626;
+  justify-content: center;
+}
+
+.Retrospective-Session-module__vzd9Ba__hide {
+  display: none;
+}
+
+.Retrospective-Session-module__vzd9Ba__infoGroup ul {
+  margin-top: .5rem;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.Retrospective-Session-module__vzd9Ba__infoGroup li {
+  margin-bottom: .5rem;
+}
+
+.Retrospective-Session-module__vzd9Ba__planSection {
+  margin-top: 2rem;
+  border-top: 1px solid #eee;
+  padding-top: 1.5rem;
+  align-items: center;
+}
+
+.Retrospective-Session-module__vzd9Ba__planForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.Retrospective-Session-module__vzd9Ba__planForm label {
+  flex: calc(33.333% - 1rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.Retrospective-Session-module__vzd9Ba__addPlanBtn {
+  flex: 100%;
+  padding: var(--control-height) 1rem;
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.Retrospective-Session-module__vzd9Ba__planList ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.Retrospective-Session-module__vzd9Ba__questionToggleBtn {
+  margin-top: 2rem;
+  padding: .5rem 1rem;
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.Retrospective-Session-module__vzd9Ba__questionsList {
+  margin-top: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: .5rem;
+  background-color: #f9fafb;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.Retrospective-Session-module__vzd9Ba__questionsList ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0;
+}
+
+.Retrospective-Session-module__vzd9Ba__planForm {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.Retrospective-Session-module__vzd9Ba__planForm label {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.Retrospective-Session-module__vzd9Ba__addPlanBtn {
+  padding: var(--control-height) 1rem;
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.Retrospective-Session-module__vzd9Ba__planTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.Retrospective-Session-module__vzd9Ba__planTable th, .Retrospective-Session-module__vzd9Ba__planTable td {
+  border: 1px solid #ddd;
+  padding: .5rem;
+  text-align: left;
+}
+
+.Retrospective-Session-module__vzd9Ba__planTable th {
+  background-color: #f9f9f9;
+}
+
+.Retrospective-Session-module__vzd9Ba__actionBtn {
+  margin: .5rem .25rem;
+  padding: .5rem 1rem;
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  line-height: var(--control-height);
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color .2s;
+  min-width: 460px;
+}
+
+.Retrospective-Session-module__vzd9Ba__actionBtn:hover {
+  background-color: #dc2626;
+}
+
+/*# sourceMappingURL=src_app_retrospective-session_Retrospective-Session_module_b52d8e88.css.map*/

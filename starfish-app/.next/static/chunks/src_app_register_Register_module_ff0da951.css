@@ -1,0 +1,123 @@
+/* [project]/src/app/register/Register.module.css [app-client] (css) */
+.Register-module__PwnMtW__registerContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #ecccccfa;
+}
+
+.Register-module__PwnMtW__registerCard {
+  background-color: #fff;
+  padding: 40px 30px;
+  border-radius: 16px;
+  text-align: center;
+  width: 320px;
+  box-shadow: 0 4px 12px #0000000d;
+}
+
+.Register-module__PwnMtW__logo {
+  margin-bottom: 16px;
+}
+
+.Register-module__PwnMtW__mainTitle {
+  font-size: 28px;
+  font-weight: bold;
+  color: #d62828;
+  margin: 0;
+}
+
+.Register-module__PwnMtW__registerTitle {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 12px;
+  margin-bottom: 24px;
+  color: #111;
+}
+
+.Register-module__PwnMtW__selectUserType {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 12px;
+  margin-bottom: 24px;
+  color: #111;
+}
+
+.Register-module__PwnMtW__formSelect {
+  font-size: 16px;
+  margin-top: 12px;
+  margin-bottom: 24px;
+  gap: 16px;
+  color: #111;
+}
+
+.Register-module__PwnMtW__registerForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.Register-module__PwnMtW__inputField {
+  width: 100%;
+  padding: .75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #fafafa;
+}
+
+.Register-module__PwnMtW__btnRegister {
+  background-color: #d62828;
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color .3s;
+}
+
+.Register-module__PwnMtW__btnRegister:hover {
+  background-color: #bb1f1f;
+}
+
+.Register-module__PwnMtW__loginText {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #333;
+}
+
+.Register-module__PwnMtW__loginLink {
+  color: #d62828;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.Register-module__PwnMtW__customSelect {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  color: #333;
+  background-color: #fff;
+  outline: none;
+  box-shadow: 0 0 0 1px #007bff1a;
+  transition: border-color .3s, box-shadow .3s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg fill='gray' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 18px 18px;
+}
+
+.Register-module__PwnMtW__customSelect:focus {
+  border-color: #f70505;
+  box-shadow: 0 0 0 3px #dc060640;
+}
+
+
+/*# sourceMappingURL=src_app_register_Register_module_ff0da951.css.map*/

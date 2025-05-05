@@ -1,5 +1,7 @@
+// src/app/SidebarToggle.tsx
 'use client';
 import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
 
@@ -8,68 +10,96 @@ interface CurrentUser {
   role: 'admin' | 'scrum-master' | 'user' | string;
 }
 
-export default function SidebarToggle({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+interface Props {
+  children: React.ReactNode;
+  hideOnPaths?: string[];            // <-- nuevo prop
+}
+
+export default function SidebarToggle({
+  children,
+  hideOnPaths = ['/login', '/register', '/error404',]
+}: Props) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+
 
   useEffect(() => {
-    const logged = localStorage.getItem('isLoggedIn');
-    setIsLoggedIn(logged === 'true');
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
-  }, []);
+    setIsClient(true);
+    setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true');
+    const su = localStorage.getItem('currentUser');
+    setCurrentUser(su ? JSON.parse(su) : null);
+  }, [pathname]);
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const toggleSidebar = () => setSidebarOpen(o => !o);
 
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUser');
+    router.push('/login');
+  };
+
+  const handleLinkClick = () => setSidebarOpen(false);
+
+  const shouldHide = hideOnPaths.some(path => 
+    // si path === '/', sólo ocultar EXACTAMENTE en '/'
+    (path === pathname) ||
+    // si path NO es '/', ocultar en rutas que comiencen con ese prefijo
+    (path !== '/' && pathname.startsWith(path))
+  );
+  
+  if (!isClient || shouldHide) {
+    return <>{children}</>;
+  }
   return (
-    <div>
+    <div className={styles.wrapper}>
       <header className={styles.header}>
-        <h1 className='hola'>Ga - Starfish</h1>
         <button onClick={toggleSidebar} className={styles.menuToggle}>
-          {sidebarOpen ? 'Ocultar Menú' : 'Mostrar Menú'}
+          {sidebarOpen ? 'Cerrar Menú' : 'Abrir Menú'}
         </button>
-      </header>
-      <div className={styles.container}>
         {sidebarOpen && (
-          <aside className={styles.sidebar}>
+          <div className={styles.dropdown}>
             <nav>
-              <ul>
+              <ul className={styles.menuList}>
                 {!isLoggedIn ? (
                   <>
-                    <li><Link href="/register">Registrarse</Link></li>
-                    <li><Link href="/login">Iniciar Sesión</Link></li>
+                    <li onClick={handleLinkClick}>
+                      <Link href="/register">Registrarse</Link>
+                    </li>
+                    <li onClick={handleLinkClick}>
+                      <Link href="/login">Iniciar Sesión</Link>
+                    </li>
                   </>
                 ) : currentUser?.role === 'admin' ? (
                   <>
-                    <li><Link href="/">Home</Link></li>
-                    <li><Link href="/members">Gestionar Miembros</Link></li>
-                    {/* El admin no crea retrospectiva */}
+                    <li onClick={handleLinkClick}><Link href="/members">Gestionar Miembros</Link></li>
                   </>
                 ) : currentUser?.role === 'scrum-master' ? (
                   <>
-                    <li><Link href="/">Home</Link></li>
-                    <li><Link href="/create-retrospective">Crear Retrospectiva</Link></li>
-                    <li><Link href="/select-fsh">Seleccionar FSH</Link></li>
+                    <li onClick={handleLinkClick}><Link href="/create-retrospective">Crear Retrospectiva</Link></li>
                   </>
                 ) : (
-                  // Usuario normal o invitado aceptado
                   <>
-                    <li><Link href="/dashboard">Dashboard</Link></li>
-                    <li><Link href="/add-actions">Agregar Acciones</Link></li>
-                    <li><Link href="/vote-actions">Votar Acciones</Link></li>
-                    <li><Link href="/retrospective-session">Ingresar a la Retrospectiva</Link></li>
-                    <li><Link href="/view-questions">Ver Preguntas</Link></li>
+                    <li onClick={handleLinkClick}><Link href="/dashboard">Página Principal</Link></li>
                   </>
+                )}
+                {isLoggedIn && (
+                  <li>
+                    <button onClick={handleLogout} className={styles.logoutBtn}>
+                      Cerrar Sesión
+                    </button>
+                  </li>
                 )}
               </ul>
             </nav>
-          </aside>
+          </div>
         )}
-        <main className={styles.main}>{children}</main>
-      </div>
+      </header>
+      <main className={styles.main}>{children}</main>
     </div>
   );
 }
+

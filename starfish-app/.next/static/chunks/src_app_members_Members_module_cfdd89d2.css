@@ -1,0 +1,247 @@
+/* [project]/src/app/members/Members.module.css [app-client] (css) */
+:root {
+  --control-height: 2.5rem;
+}
+
+.Members-module__j-EtRa__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.Members-module__j-EtRa__header {
+  grid-column: 1 / -1;
+  top: 60px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: none;
+  background-color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px #0000000d;
+}
+
+.Members-module__j-EtRa__logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: none;
+}
+
+.Members-module__j-EtRa__logoImage {
+  width: 60px;
+  height: auto;
+}
+
+.Members-module__j-EtRa__projectName {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #e53e3e;
+}
+
+.Members-module__j-EtRa__pageTitle {
+  flex: auto;
+  text-align: center;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.Members-module__j-EtRa__menuWrapper {
+  flex: none;
+  margin-left: 1rem;
+  padding-right: .5rem;
+}
+
+.Members-module__j-EtRa__menuButton {
+  padding: .5rem 1rem;
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+
+.Members-module__j-EtRa__menuButton:hover {
+  background-color: #dc2626;
+}
+
+.Members-module__j-EtRa__usersList {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 10px;
+  overflow-y: auto;
+  max-height: 70vh;
+  min-height: 600px;
+  min-width: 700px;
+}
+
+.Members-module__j-EtRa__userCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  background: #fff;
+}
+
+.Members-module__j-EtRa__userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  padding: .5rem;
+}
+
+.Members-module__j-EtRa__actions {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.Members-module__j-EtRa__actions label {
+  align-self: center;
+}
+
+.Members-module__j-EtRa__selectBtn {
+  padding: .5rem 1rem;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  min-width: 90px;
+}
+
+.Members-module__j-EtRa__actions select, .Members-module__j-EtRa__actions .Members-module__j-EtRa__selectBtn {
+  height: var(--control-height);
+  box-sizing: border-box;
+  font-size: 1rem;
+  border-radius: 6px;
+}
+
+.Members-module__j-EtRa__selectBtn:hover {
+  background-color: #dc2626;
+}
+
+.Members-module__j-EtRa__deleteBtn {
+  padding: .5rem 1rem;
+  background: none;
+  color: #ef4444;
+  border: 2px solid #ef4444;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.Members-module__j-EtRa__deleteBtn:hover {
+  background-color: #f87171;
+  color: #fff;
+}
+
+.Members-module__j-EtRa__groupCreator {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0000001a;
+  min-width: 432px;
+}
+
+.Members-module__j-EtRa__input {
+  width: 100%;
+  padding: .5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+.Members-module__j-EtRa__button {
+  display: block;
+  width: 100%;
+  background-color: #ef4444;
+}
+
+.Members-module__j-EtRa__button:hover {
+  background-color: #dc2626;
+}
+
+.Members-module__j-EtRa__actions select {
+  padding: 0 1rem;
+  border: 1px solid #d1d5db;
+  background-color: #fff;
+}
+
+.Members-module__j-EtRa__actions .Members-module__j-EtRa__selectBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+
+.Members-module__j-EtRa__actions .Members-module__j-EtRa__selectBtn:hover {
+  background-color: #dc2626;
+}
+
+.Members-module__j-EtRa__select {
+  box-sizing: border-box;
+  padding: .5rem 1rem;
+  height: 2.5rem;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #fff;
+  margin-bottom: 0;
+  align-self: center;
+}
+
+.Members-module__j-EtRa__userListContainer {
+  min-height: 600px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;
+  min-width: 430px;
+}
+
+.Members-module__j-EtRa__selectedUsers {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.Members-module__j-EtRa__selectedUsers h3 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.Members-module__j-EtRa__selectedTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .95rem;
+}
+
+.Members-module__j-EtRa__selectedTable th, .Members-module__j-EtRa__selectedTable td {
+  padding: .75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid;
+}
+
+
+/*# sourceMappingURL=src_app_members_Members_module_cfdd89d2.css.map*/

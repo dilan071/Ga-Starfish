@@ -1,6 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import styles from './Register.module.css';
+import Swal from 'sweetalert2';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -16,7 +19,13 @@ export default function RegisterPage() {
 
     let users = JSON.parse(localStorage.getItem('users') || '[]');
     if (users.find((u: any) => u.email === trimmedEmail)) {
-      alert('El usuario ya existe');
+      Swal.fire({
+        text: "El email ingresado ya existe en la plataforma.",
+        icon: "error",
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Cerrar',
+        scrollbarPadding: false
+      });
       return;
     }
 
@@ -30,41 +39,75 @@ export default function RegisterPage() {
 
     users.push(newUser);
     localStorage.setItem('users', JSON.stringify(users));
-    alert('Registro exitoso');
+    Swal.fire({
+      text: "Registro exitoso.",
+      icon: "success",
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Cerrar',
+      scrollbarPadding: false
+    });
     router.push('/login');
   };
-
-  return (
-    <div style={{ padding: '1rem' }}>
-      <h2>Registrarse</h2>
-      <form onSubmit={handleRegister}>
-        <div>
-          <label>Email:</label><br />
-          <input 
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required 
+    return (
+      <div className={styles.registerContainer}>
+        <div className={styles.registerCard}>
+          <Image
+            src="/img/starfish.png"
+            alt="Starfish Logo"
+            width={140}
+            height={140}
+            className={styles.logo}
           />
+  
+          <h1 className={styles.mainTitle}>Ga‑Starfish</h1>
+          <h2 className={styles.registerTitle}>Registrarse</h2>
+  
+          <form className={styles.registerForm} onSubmit={handleRegister}>
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className={styles.inputField}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className={styles.inputField}
+              required
+            />
+            <div>
+            <h3 className={styles.selectUserType}>Tipo de Usuario:</h3>
+            <select
+              className={styles.customSelect}
+              value={userType}
+              onChange={e => setUserType(e.target.value)}
+              required
+              aria-label='Selecciona un tipo de usuario'
+            >
+              <option value="" disabled>Selecciona un tipo</option>
+              <option value="admin">Administrador</option>
+              <option value="user">Scrum Master o Desarrollador</option>
+            </select>
+            </div>
+            <button type="submit" className={styles.btnRegister}>
+              Registrarse
+            </button>
+          </form>
+  
+          <p className={styles.loginText}>
+            ¿Ya tienes una cuenta?{' '}
+            <span
+              className={styles.loginLink}
+              onClick={() => router.push('/login')}
+            >
+              Iniciar sesión
+            </span>
+          </p>
         </div>
-        <div>
-          <label>Contraseña:</label><br />
-          <input 
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required 
-          />
-        </div>
-        <div>
-          <label>Tipo de Usuario:</label><br />
-          <select value={userType} onChange={e => setUserType(e.target.value)}>
-            <option value="admin">Admin</option>
-            <option value="user">Desarrollador</option>
-          </select>
-        </div>
-        <button type="submit">Registrarse</button>
-      </form>
-    </div>
-  );
-}
+      </div>
+    );
+  }

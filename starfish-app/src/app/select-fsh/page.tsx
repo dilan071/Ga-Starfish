@@ -10,14 +10,14 @@ export default function SelectFSH() {
   const handleSelect = () => {
     if (selectedFSH) {
       localStorage.setItem('selectedFSH', selectedFSH);
-      alert(`FSH seleccionado: ${selectedFSH}`);
+      alert(`Factor social seleccionado: ${selectedFSH}`);
       router.push('/view-questions');
     }
   };
 
   return (
     <div>
-       <h2>Seleccionar FSH</h2>
+      <h2>Seleccionar FSH</h2>
       <select value={selectedFSH} onChange={(e) => setSelectedFSH(e.target.value)}>
         <option value="">Ninguno</option>
         <option value="Comunicación">Comunicación</option>
@@ -38,3 +38,4 @@ export default function SelectFSH() {
     </div>
   );
 }
+

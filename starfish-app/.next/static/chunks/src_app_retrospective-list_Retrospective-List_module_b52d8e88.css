@@ -1,0 +1,139 @@
+/* [project]/src/app/retrospective-list/Retrospective-List.module.css [app-client] (css) */
+:root {
+  --control-height: 2.5rem;
+}
+
+.Retrospective-List-module__BF2Exq__container {
+  min-width: 1040px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  min-height: 600px;
+}
+
+.Retrospective-List-module__BF2Exq__header {
+  top: 60px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px #0000000d;
+}
+
+.Retrospective-List-module__BF2Exq__logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.Retrospective-List-module__BF2Exq__logoImage {
+  width: 60px;
+  height: auto;
+}
+
+.Retrospective-List-module__BF2Exq__projectName {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #e53e3e;
+}
+
+.Retrospective-List-module__BF2Exq__pageTitle {
+  flex: 1;
+  text-align: center;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.Retrospective-List-module__BF2Exq__menuWrapper {
+  flex: none;
+}
+
+.Retrospective-List-module__BF2Exq__menuButton {
+  padding: .5rem 1rem;
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+
+.Retrospective-List-module__BF2Exq__menuButton:hover {
+  background-color: #dc2626;
+}
+
+.Retrospective-List-module__BF2Exq__listSection {
+  background: #fff;
+  padding: 2rem 1rem 2rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0000001a;
+  display: flex;
+  flex-direction: column;
+  min-height: 600px;
+  overflow-y: auto;
+}
+
+.Retrospective-List-module__BF2Exq__listSection::-webkit-scrollbar {
+  width: 8px;
+}
+
+.Retrospective-List-module__BF2Exq__listSection::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 4px;
+}
+
+.Retrospective-List-module__BF2Exq__retroCard {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  background: #fafafa;
+}
+
+.Retrospective-List-module__BF2Exq__retroInfo {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.Retrospective-List-module__BF2Exq__enterBtn {
+  margin-top: 1rem;
+  align-self: flex-start;
+  padding: .5rem 1rem;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+
+.Retrospective-List-module__BF2Exq__enterBtn:hover {
+  background-color: #dc2626;
+}
+
+.Retrospective-List-module__BF2Exq__closeBtn {
+  margin-top: .5rem;
+  align-self: flex-start;
+  padding: .5rem 1rem;
+  background: none;
+  color: #ef4444;
+  border: 2px solid #ef4444;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color .2s, color .2s;
+}
+
+.Retrospective-List-module__BF2Exq__closeBtn:hover {
+  background-color: #f87171;
+  color: #fff;
+}
+
+/*# sourceMappingURL=src_app_retrospective-list_Retrospective-List_module_b52d8e88.css.map*/

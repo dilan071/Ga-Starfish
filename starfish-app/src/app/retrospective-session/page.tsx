@@ -1,26 +1,98 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import SidebarToggle from '../SidebarToggle';
+import styles from './Retrospective-Session.module.css';
+import Link from 'next/link';
+import Swal from 'sweetalert2';
 
 export default function RetrospectiveSessionPage() {
   const [retrospective, setRetrospective] = useState<any>(null);
-  const [actionText, setActionText] = useState('');
-  const [hasVoted, setHasVoted] = useState(false);
-  const [showQuestions, setShowQuestions] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
-  const [userVotedAction, setUserVotedAction] = useState<string | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [showQuestions, setShowQuestions] = useState(false);
+
+  const [planActions, setPlanActions] = useState<any[]>([]);
+  const [assignedMembers, setAssignedMembers] = useState<string[]>([]);
+  const [responsible, setResponsible] = useState('');
+  const [planAction, setPlanAction] = useState('');
+  const [estimatedTime, setEstimatedTime] = useState('');
+  const [timeUnit, setTimeUnit] = useState('Horas');
+
+  const [hasVoted, setHasVoted] = useState(false);
+  const [actionText, setActionText] = useState('');
+
   const searchParams = useSearchParams();
   const retrospectiveId = searchParams.get('id');
 
-  // Función para obtener avatar de un email
-  const getAvatar = (email: string) => {
-    const all = JSON.parse(localStorage.getItem('users') || '[]');
-    const u = all.find((x: any) => x.email === email);
-    return u?.avatar || '/default-avatar.png';
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    setCurrentUser(user);
+    const retros = JSON.parse(localStorage.getItem('retrospectives') || '[]');
+    const retro = retros.find((r: any) => r.id === retrospectiveId);
+    if (retro && user && retro.assignedGroup === user.assignedGroup) {
+      setRetrospective(retro);
+      setIsAuthorized(true);
+      setPlanActions(retro.planActions || []);
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      setAssignedMembers(
+        users.filter((u: any) => u.assignedGroup === retro.assignedGroup).map((u: any) => u.email)
+      );
+      // cargar acciones y votos existentes
+      if (retro.votes && retro.votes[user.email]) setHasVoted(true);
+    }
+  }, [retrospectiveId]);
+
+  const handleAddPlanAction = () => {
+    if (!responsible || !planAction.trim() || !estimatedTime.trim()) {
+      Swal.fire({ text: 'Completa todos los campos.', icon: 'error', confirmButtonColor: '#ef4444' });
+      return;
+    }
+    const newPlan = {
+      id: Date.now().toString(), responsible, action: planAction.trim(), estimatedTime: Number(estimatedTime), timeUnit
+    };
+    const updated = [...planActions, newPlan];
+    setPlanActions(updated);
+    // persistir
+    const updatedRetro = { ...retrospective, planActions: updated };
+    const all = JSON.parse(localStorage.getItem('retrospectives') || '[]');
+    localStorage.setItem(
+      'retrospectives',
+      JSON.stringify(all.map((r: any) => r.id === retrospectiveId ? updatedRetro : r))
+    );
+    setRetrospective(updatedRetro);
+    setResponsible(''); setPlanAction(''); setEstimatedTime(''); setTimeUnit('Horas');
   };
 
-  // Mapeo de preguntas por FSH
+  const handleCloseRetrospective = () => {
+    if (!currentUser) return;
+    if (currentUser.email !== retrospective.createdBy) {
+      Swal.fire({
+        text: "No tienes permiso para cerrar esta retrospectiva.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
+      return;
+    }
+    const updatedRetro = { ...retrospective, closed: true };
+    const all = JSON.parse(localStorage.getItem("retrospectives") || "[]");
+    localStorage.setItem(
+      "retrospectives",
+      JSON.stringify(
+        all.map((r: any) =>
+          r.id === retrospectiveId ? updatedRetro : r
+        )
+      )
+    );
+    setRetrospective(updatedRetro);
+    Swal.fire({
+      text: "Retrospectiva cerrada exitosamente.",
+      icon: "success",
+      confirmButtonColor: "#ef4444",
+    });
+  }; 
+
+
   const questionsMapping: { [key: string]: string[] } = {
     'Comunicación': [
       '¿En qué momentos del sprint la comunicación fue efectiva y cómo podemos replicarla en el futuro?',
@@ -76,223 +148,174 @@ export default function RetrospectiveSessionPage() {
     ],
   };
 
-
-  // Cargar retrospectiva y usuario desde localStorage
-  useEffect(() => {
-    const storedRetrospectives = localStorage.getItem('retrospectives');
-    const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
-    setCurrentUser(user);
-  
-    if (storedRetrospectives) {
-      const retros = JSON.parse(storedRetrospectives);
-      let retroToLoad = null;
-  
-      if (retrospectiveId) {
-        retroToLoad = retros.find((retro: any) => retro.id && retro.id === retrospectiveId);
-      } else if (user && user.assignedGroup) {
-        const retrospectivesForGroup = retros.filter((retro: any) => 
-          retro.assignedGroup && retro.assignedGroup.trim() === user.assignedGroup.trim() && retro.closed === false
-        );
-        retrospectivesForGroup.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        retroToLoad = retrospectivesForGroup.length > 0 ? retrospectivesForGroup[0] : null;
-      }
-  
-      if (retroToLoad) {
-        setRetrospective(retroToLoad);
-        setIsAuthorized(true);
-      } else {
-        setRetrospective(null);
-        setIsAuthorized(false);
-      }
-    }
-  }, [retrospectiveId]);
-
-  useEffect(() => {
-    if (retrospective && currentUser && retrospective.votes) {
-      const voteId = retrospective.votes[currentUser.email];
-      if (voteId) {
-        setHasVoted(true);
-        setUserVotedAction(voteId);
-      }
-    }
-  }, [retrospective, currentUser]);
-
-  // Función para otorgar puntos
-  const addPoint = (type: 'vote' | 'comment') => {
-    if (!currentUser) return;
-    const record = JSON.parse(localStorage.getItem('points') || '[]');
-    const entry = {
-      email: currentUser.email,
-      type,
-      date: new Date().toISOString(),
-      points: type === 'vote' ? 1 : 2
-    };
-    localStorage.setItem('points', JSON.stringify([...record, entry]));
-  };
-
-  // Agregar nueva acción (comentario)
-  const handleAddAction = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!actionText.trim()) return;
-
-    const newAction = {
-      id: Date.now().toString(),
-      text: actionText.trim(),
-      createdBy: currentUser?.email || 'desconocido',
-      voteCount: 0
-    };
-
-    const updated = {
-      ...retrospective,
-      actions: retrospective.actions ? [...retrospective.actions, newAction] : [newAction],
-      votes: retrospective.votes || {}
-    };
-
-    localStorage.setItem('retrospective', JSON.stringify(updated));
-    setRetrospective(updated);
-    setActionText('');
-    addPoint('comment');
-  };
-
-  // Votar o cambiar voto
-  const handleVote = (actionId: string) => {
-    if (retrospective.closed) {
-      alert('La retrospectiva está cerrada. No se pueden emitir votos.');
-      return;
-    }
-    if (!currentUser) return;
-
-    const prevVote = retrospective.votes?.[currentUser.email];
-    const updatedActions = retrospective.actions.map((a: any) => {
-      if (a.id === actionId) return { ...a, voteCount: a.voteCount + 1 };
-      if (a.id === prevVote) return { ...a, voteCount: Math.max(0, a.voteCount - 1) };
-      return a;
-    });
-
-    const updatedVotes = { ...retrospective.votes, [currentUser.email]: actionId };
-    const updated = { ...retrospective, actions: updatedActions, votes: updatedVotes };
-
-    localStorage.setItem('retrospective', JSON.stringify(updated));
-    setRetrospective(updated);
-    setHasVoted(true);
-    setUserVotedAction(actionId);
-    addPoint('vote');
-  };
-
-  // Toggle preguntas FSH
-  const toggleQuestions = () => {
-    setShowQuestions(!showQuestions);
-  };
-
-  // Cerrar retrospectiva (solo Scrum Master)
-  const handleCloseRetrospective = () => {
-    if (!currentUser) return;
-    if (currentUser.email !== retrospective.createdBy) {
-      alert('No tienes permiso para cerrar esta retrospectiva.');
-      return;
-    }
-    const updatedRetro = {
-      ...retrospective,
-      closed: true
-    };
-
-    const storedRetrospectives = localStorage.getItem('retrospectives');
-    if (storedRetrospectives) {
-      const retros = JSON.parse(storedRetrospectives);
-      const updatedRetros = retros.map((retro: any) => {
-        if (
-          retro.assignedGroup &&
-          currentUser &&
-          retro.assignedGroup.trim() === currentUser.assignedGroup.trim() &&
-          retro.createdAt === retrospective.createdAt
-        ) {
-          return updatedRetro;
-        }
-        return retro;
-      });
-      localStorage.setItem('retrospectives', JSON.stringify(updatedRetros));
-    }
-    setRetrospective(updatedRetro);
-    alert('Retrospectiva cerrada.');
-  };
+  const toggleQuestions = () => setShowQuestions(!showQuestions);
 
   if (!retrospective) return <div>No hay retrospectiva activa.</div>;
-  if (!isAuthorized) return <div>No tienes permiso para ver esta retrospectiva.</div>;
+  if (!isAuthorized) return <div>No tienes permiso.</div>;
+
+  
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>Retrospectiva: {retrospective.title}</h2>
-      <p>{retrospective.description}</p>
-      {retrospective.fsh && (
-        <p>
-          FSH: <span style={{ color: 'blue' }}>{retrospective.fsh}</span>
-        </p>
-      )}
-
-      <hr />
-      <h3>Agregar Acción</h3>
-      <form onSubmit={handleAddAction}>
-        <input
-          type="text"
-          placeholder="Escribe tu acción"
-          value={actionText}
-          onChange={(e) => setActionText(e.target.value)}
-          disabled={retrospective.closed}
-        />
-        <button type="submit" disabled={retrospective.closed}>
-          Agregar Acción
-        </button>
-      </form>
-
-      <hr />
-      <h3>Acciones Agregadas</h3>
-      {retrospective.actions?.length ? (
-        <ul>
-          {retrospective.actions.map((action: any) => (
-            <li key={action.id} style={{ display: 'flex', alignItems: 'center', margin: '0.5rem 0' }}>
-              <img
-                src={getAvatar(action.createdBy)}
-                alt="avatar"
-                style={{ width: '32px', height: '32px', borderRadius: '50%', marginRight: '0.5rem' }}
-              />
-              <div style={{ flex: 1 }}>
-                <strong>{action.createdBy}</strong>: {action.text}
-              </div>
-              <div style={{ marginLeft: '1rem' }}>
-                {action.voteCount} votos
-                <button
-                  onClick={() => handleVote(action.id)}
-                  disabled={hasVoted}
-                  style={{ marginLeft: '0.5rem' }}
-                >
-                  {userVotedAction === action.id ? 'Has votado' : 'Votar'}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No se han agregado acciones aún.</p>
-      )}
-
-      <hr />
-      <button onClick={toggleQuestions}>
-        {showQuestions ? 'Ocultar Preguntas' : 'Ver Preguntas'}
-      </button>
-      {showQuestions && retrospective.fsh && (
-        <div>
-          <h3>Preguntas para {retrospective.fsh}</h3>
-          <ul>
-            {(questionsMapping[retrospective.fsh] || []).map((q, i) => (
-              <li key={i}>{q}</li>
-            ))}
-          </ul>
+    <main className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.logoContainer}>
+          <img
+            src="/img/starfish.png"
+            alt="Ga-Starfish Logo"
+            className={styles.logoImage}
+          />
+          <span className={styles.projectName}>Ga-Starfish</span>
         </div>
-      )}
+        <h1 className={styles.pageTitle}>
+          Retrospectiva
+        </h1>
+        <div className={styles.menuWrapper}>
+          <SidebarToggle> </SidebarToggle>
+        </div>
+      </header>
 
-      {currentUser?.email === retrospective?.createdBy && !retrospective?.closed && (
-        <button onClick={handleCloseRetrospective}>Cerrar Retrospectiva</button>
-      )}
-    </div>
+
+      <section className={styles.sessionSection}>
+        <div className={styles.infoGroup}>
+          <p>
+            <strong>Retrospectiva:</strong> {retrospective.title}
+          </p>
+          <p>
+              <strong>Descripción:</strong> {retrospective.description}
+          </p>
+          <p>
+            <strong>Grupo:</strong> {retrospective.assignedGroup}
+          </p>
+          {retrospective.fsh && (
+            <p>
+              <strong>FSH:</strong> {retrospective.fsh}
+            </p>
+          )}
+          <p>
+            <strong>Estado:</strong> {retrospective.closed ? 'Cerrada' : 'Abierta'}
+        </p>
+        </div>
+        
+        {currentUser.email === retrospective.createdBy &&
+          !retrospective.closed && (
+            <button
+              onClick={handleCloseRetrospective}
+              className={styles.enterBtn}
+            >
+              Cerrar Retrospectiva
+            </button>
+          )}
+
+        <div className={styles.infoGroup}>
+          <h3>
+            Técnica Starfish:
+          </h3>
+        </div>
+
+        <div className={styles.buttonGroup}>
+          <Link 
+            href={`/more-of/${retrospective.id}`} 
+            className={styles.actionBtn}
+          >
+            Hacer más
+          </Link>
+          <Link 
+            href={`/less-of/${retrospective.id}`} 
+            className={styles.actionBtn}
+          >
+            Hacer menos
+          </Link>
+          <Link 
+            href={`/keep-doing/${retrospective.id}`} 
+            className={styles.actionBtn}
+          >
+            Continuar haciendo
+          </Link>
+          <Link 
+            href={`/stop-doing/${retrospective.id}`} 
+            className={styles.actionBtn}
+          >
+            Dejar de hacer
+          </Link>
+          <Link 
+            href={`/start-doing/${retrospective.id}`} 
+            className={styles.actionBtn}
+          >
+            Comenzar a hacer
+          </Link>
+        </div>
+
+
+        {/* Plan de Acción */}
+        <div className={styles.planSection}>
+          <h3>Plan de Acción:</h3>
+          {currentUser.email === retrospective.createdBy && !retrospective.closed && (
+            <div className={styles.planForm}>
+              <select value={responsible} onChange={e => setResponsible(e.target.value)}>
+                <option value="">Responsable</option>
+                {assignedMembers.map(em => (
+                  <option key={em} value={em}>{em}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="Acción"
+                value={planAction}
+                onChange={e => setPlanAction(e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Tiempo estimado"
+                min="1"
+                value={estimatedTime}
+                onChange={e => setEstimatedTime(e.target.value)}
+              />
+              <select value={timeUnit} onChange={e => setTimeUnit(e.target.value)}>
+                {['Minutos','Horas','Días','Semanas'].map(u => (
+                  <option key={u} value={u}>{u}</option>
+                ))}
+              </select>
+              <button onClick={handleAddPlanAction} className={styles.enterBtn}>
+                Agregar Acción
+              </button>
+            </div>
+          )}
+          <table className={styles.planTable}>
+            <thead>
+              <tr>
+                <th>Responsable</th>
+                <th>Acción</th>
+                <th>Estimado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {planActions.map(pa => (
+                <tr key={pa.id}>
+                  <td>{pa.responsible}</td>
+                  <td>{pa.action}</td>
+                  <td>{pa.estimatedTime} {pa.timeUnit}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <button onClick={toggleQuestions} className={styles.questionToggleBtn}>
+          {showQuestions ? 'Ocultar Preguntas' : 'Ver Preguntas'}
+        </button>
+
+        {showQuestions && retrospective.fsh && (
+          <div className={styles.questionsList}>
+            <h3>Preguntas para {retrospective.fsh}:</h3>
+            <ul>
+              {questionsMapping[retrospective.fsh]?.map((q, idx) => (
+                <li key={idx}>{q}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+    </main>
   );
 }
+
